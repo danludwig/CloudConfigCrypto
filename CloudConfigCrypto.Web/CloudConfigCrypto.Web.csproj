@@ -18,6 +18,10 @@
     <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,6 +44,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.4.5.9\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PKCS12ProtectedConfigurationProvider">
+      <HintPath>..\packages\Pkcs12ProtectedConfigurationProvider.1.0.1\lib\NET40\PKCS12ProtectedConfigurationProvider.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -126,7 +133,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\CloudConfigCryptoController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -190,6 +197,10 @@
     <Content Include="content\themes\base\minified\jquery.ui.theme.min.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="images\0435.clip_image002_2.jpg" />
+    <Content Include="images\8054.clip_image003_2.png" />
+    <Content Include="images\8867.clip_image005_2.jpg" />
+    <Content Include="sample_certificates\sample_config_crypto_readme.txt" />
     <Content Include="scripts\jquery-1.8.2-vsdoc.js" />
     <Content Include="scripts\jquery-1.8.2.js" />
     <Content Include="scripts\jquery-1.8.2.min.js" />
@@ -228,9 +239,9 @@
     <Content Include="images\orderedList8.png" />
     <Content Include="images\orderedList9.png" />
     <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\About.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\Contact.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Web.config" />
@@ -240,6 +251,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\CloudConfigCrypto\CreateCertificates.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="sample_certificates\sample_config_crypto_cert.cer" />
+    <None Include="sample_certificates\sample_config_crypto_cert.pfx" />
+    <None Include="sample_certificates\sample_config_crypto_cert.pvk" />
+    <Content Include="Views\CloudConfigCrypto\ImportCertificatesLocally.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

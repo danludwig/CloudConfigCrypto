@@ -1,0 +1,93 @@
+﻿@{
+    ViewBag.Title = "Create Certificates";
+}
+<section class="featured">
+    <div class="content-wrapper">
+        <hgroup class="title">
+            <h1>@ViewBag.Title:</h1>
+            <h2>
+                Based on <a href="http://blogs.msdn.com/b/sqlazure/archive/2010/09/07/10058942.aspx"
+                    target="_blank">this article by Wayne Walter Berry</a>. Content reproduced without
+                permission. Sue me <a href="http://www.brokenlink.com" target="_blank">here</a>.</h2>
+        </hgroup>
+        <p>
+            <strong>Important:</strong> If you are the one creating the private key certificate,
+            <mark>make sure you <strong>never forget</strong> the certificate password</mark>.
+            Without the correct password used to create the private key, you <strong>will not</strong>
+            be able to import the private key certificate (PFX file) into any certificate stores
+            (local or Azure). And, without the PFX file, you <strong>will not</strong> be able
+            to decrypt any previously-encrypted config sections.
+        </p>
+    </div>
+</section>
+<h3>
+    Skipping this step</h3>
+<p>
+    For basic testing purposes, you can skip this step and just use the sample certificates
+    provided in the <code>sample_certificates</code> folder in this project. The password
+    for the PFX file is <code>pw</code>. <strong>Be sure never to upload these certificates
+        to Azure or use them in a production environment!</strong>
+</p>
+<h3>
+    Creating a Certificate</h3>
+<p>
+    The first thing the Windows Azure administrator (private key holder) needs to do
+    is use their local machine to create a certificate. In order to do this they will
+    need Visual Studio 2008, 2010, or 2012 installed. The technique that I usually use
+    to create a private/public key pair is with a program called makecert.exe.
+</p>
+<p>
+    Here are the steps to create a self-signed certificate in .pfx format.
+</p>
+<ol class="round">
+    <li class="one">
+        <h5>
+            Open a Visual Studio command prompt (Run as administrator).</h5>
+        You will find the command prompt in the start menu under Visual Studio tools.</li>
+    <li class="two">
+        <h5>
+            Execute this command:</h5>
+        <code>makecert -r -pe -n "CN=azureconfig" -sky exchange "azureconfig.cer" -sv "azureconfig.pvk"</code>
+        <br />
+        <br />
+        <strong>Note:</strong> You can change the &quot;azureconfig&quot; parts to name
+        your certificate files as you like. They do not need to be named &quot;azureconfig&quot;,
+        and the &quot;CN=&quot; part can be any Computer Name of your choosing.
+        <br />
+        <br />
+        <img src="~/images/0435.clip_image002_2.jpg" alt="Command prompt makecert screen shot" />
+    </li>
+    <li class="three">
+        <h5>
+            You will be prompted for a password to secure the private key three times.</h5>
+        Enter a password of your choice, but either <strong>write it down and keep it somewhere
+            secure</strong> or make sure it is a password you will <strong>never forget</strong>.
+        <br />
+        <br />
+        <img src="~/images/8054.clip_image003_2.png" alt="Password prompt screen shot" />
+        <br />
+        <br />
+        This will generate an <strong>azureconfig.cer file (the public key certificate)</strong>
+        and an <strong>azureconfig.pvk file (the private key)</strong> in the folder where
+        you ran makecert from the command prompt. (Note the file names will be different
+        if you chose not to name the files &quot;azureconfig&quot;.)</li>
+    <li class="four">
+        <h5>
+            Enter the following command to create the .pfx file.</h5>
+        This format is used to import the private key to Windows Azure, and is needed to
+        decrypt config files.<br />
+        <strong>After the –pi switch, enter the password you chose</strong>.
+        <br />
+        <code>pvk2pfx -pvk "azureconfig.pvk" -spc "azureconfig.cer" -pfx "azureconfig.pfx" -pi
+            password-entered-in-previous-step</code></li>
+    <li class="five">
+        <h5>
+            Verify that the certificates have been created by looking in the current directory
+            in the Visual Studio command prompt.</h5>
+        You can do this by typing <code>dir</code> into the command prompt and then hitting
+        the <kbd>Enter</kbd> key.<br />
+        There should be 3 files: a *.cer file, a *.pvk file, and a *.pfx file.
+        <br />
+        <br />
+        <img src="~/images/8867.clip_image005_2.jpg" alt="Command prompt file results screen shot" /></li>
+</ol>

@@ -13,7 +13,7 @@ namespace CloudConfigCrypto.Web
                 "{controller}/{action}/{id}",
                 new
                     {
-                        controller = "Home",
+                        controller = "CloudConfigCrypto",
                         action = "Index",
                         id = UrlParameter.Optional
                     }

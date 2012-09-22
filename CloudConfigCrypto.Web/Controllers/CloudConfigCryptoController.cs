@@ -2,7 +2,7 @@
 
 namespace CloudConfigCrypto.Web.Controllers
 {
-    public class HomeController : Controller
+    public class CloudConfigCryptoController : Controller
     {
         public ActionResult Index()
         {
@@ -20,6 +20,16 @@ namespace CloudConfigCrypto.Web.Controllers
         {
             ViewBag.Message = "Your contact page.";
 
+            return View();
+        }
+
+        public ActionResult CreateCertificates()
+        {
+            return View();
+        }
+
+        public ActionResult ImportCertificatesLocally()
+        {
             return View();
         }
     }

@@ -11,7 +11,13 @@
                     for Azure, or any server where you can't touch the machine.config file.</h2>
             </hgroup>
             <p>
-                All of this is based on a set of articles published
+                All of this is based on a <a href="http://nuget.org/packages/Pkcs12ProtectedConfigurationProvider"
+                    target="_blank">PKCS12ProtectedConfigurationProvider nuget package</a> and a
+                <a href="http://archive.msdn.microsoft.com/pkcs12protectedconfg" target="_blank">set
+                    of articles published by Wayne Walter Berry</a>. This app <strong>will not</strong>
+                create your certificate, push it to Azure, or place it in your local certificate
+                store. It <strong>will</strong> help you encrypt and decrypt sections without a
+                command prompt.
             </p>
             @*<p>
                 To learn more about ASP.NET MVC visit <a href="http://asp.net/mvc" title="ASP.NET MVC Website">
@@ -25,22 +31,23 @@
     </section>
 }
 <h3>
-    We suggest the following:</h3>
+    Follow this process:</h3>
 <ol class="round">
     <li class="one">
         <h5>
-            Getting Started</h5>
-        ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-        enables a clean separation of concerns and that gives you full control over markup
-        for enjoyable, agile development. ASP.NET MVC includes many features that enable
-        fast, TDD-friendly development for creating sophisticated applications that use
-        the latest web standards. <a href="http://go.microsoft.com/fwlink/?LinkId=245151">Learn
-            more…</a> </li>
+            Create a certificate</h5>
+        Follow <a href="@Url.Action("CreateCertificates", "CloudConfigCrypto")">these instructions</a>
+        to create the certificates that will be used to encrypt and decrypt your config
+        file(s).
+        <br />
+        To simply test this app, you can skip this step and use the sample certificates
+        provided with this project (in the <code>sample_certificates</code> folder).
+    </li>
     <li class="two">
         <h5>
-            Add NuGet packages and jump-start your coding</h5>
-        NuGet makes it easy to install and update free libraries and tools. <a href="http://go.microsoft.com/fwlink/?LinkId=245153">
-            Learn more…</a> </li>
+            Import the certificates into your local certificate store</h5>
+        Follow <a href="@Url.Action("ImportCertificatesLocally", "CloudConfigCrypto")">these
+            instructions</a> to import certificates into your local machine.</li>
     <li class="three">
         <h5>
             Find Web Hosting</h5>
