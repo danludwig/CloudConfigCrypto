@@ -1,93 +1,121 @@
 ﻿@{
-    ViewBag.Title = "Create Certificates";
+    ViewBag.Title = "Import Certificate Locally";
 }
 <section class="featured">
     <div class="content-wrapper">
         <hgroup class="title">
             <h1>@ViewBag.Title:</h1>
             <h2>
-                Based on <a href="http://blogs.msdn.com/b/sqlazure/archive/2010/09/07/10058942.aspx"
+                Based on <a href="http://blogs.msdn.com/b/sqlazure/archive/2010/09/09/10059889.aspx"
                     target="_blank">this article by Wayne Walter Berry</a>. Content reproduced without
-                permission. Sue me <a href="http://www.brokenlink.com" target="_blank">here</a>.</h2>
+                permission. Sue me <a href="http://www.brokenlink.com" target="_blank">here</a>.
+            </h2>
         </hgroup>
         <p>
-            <strong>Important:</strong> If you are the one creating the private key certificate,
-            <mark>make sure you <strong>never forget</strong> the certificate password</mark>.
-            Without the correct password used to create the private key, you <strong>will not</strong>
-            be able to import the private key certificate (PFX file) into any certificate stores
-            (local or Azure). And, without the PFX file, you <strong>will not</strong> be able
-            to decrypt any previously-encrypted config sections.
+            <strong>Important:</strong> The instructions referenced above recommend only importing the public key certificate (.cer file) into your local certificate store.
+            This is fine for users who will only
+            <mark>encrypt</mark>
+            config sections. However in order to
+            <mark>decrypt</mark>
+            them, you will need to import the private key certificate (.pfx file) into your
+            local certificate store. 
         </p>
     </div>
 </section>
 <h3>
-    Skipping this step</h3>
+    Decide whether you will only want to encrypt the config sections, or both encrypt and decrypt them.
+</h3>
 <p>
-    For basic testing purposes, you can skip this step and just use the sample certificates
-    provided in the <code>sample_certificates</code> folder in this project. The password
-    for the PFX file is <code>pw</code>. <strong>Be sure never to upload these certificates
-        to Azure or use them in a production environment!</strong>
+    Only distrbute the private key (.PFX) certificate file and its password to users who you want to be able to decrypt config sections.
+    Distribute the public key (.CER) certificate (but not the password!) to users who you want to only be able to encrypt config sections.
 </p>
 <h3>
-    Creating a Certificate</h3>
+    Importing the Public Key (for encrypt-only access)
+</h3>
 <p>
-    The first thing the Windows Azure administrator (private key holder) needs to do
-    is use their local machine to create a certificate. In order to do this they will
-    need Visual Studio 2008, 2010, or 2012 installed. The technique that I usually use
-    to create a private/public key pair is with a program called makecert.exe.
-</p>
-<p>
-    Here are the steps to create a self-signed certificate in .pfx format.
+    The first thing that the SQL Azure administrator has to do is take the public key gotten from the Windows Azure administrator and import it into their local certificate store on their local box. The <a href="http://msdn.microsoft.com/en-us/library/k6h9cz8h(VS.80).aspx" target="_blank">aspnet_regiis.exe</a> tool which performs the encoding on the web.config uses the local certificate store.
 </p>
 <ol class="round">
     <li class="one">
         <h5>
-            Open a Visual Studio command prompt (Run as administrator).</h5>
-        You will find the command prompt in the start menu under Visual Studio tools.</li>
+            Open the Microsoft Management Console.
+        </h5>
+        Click Start, type <code>mmc</code> in the Search programs and files box, and then press <kbd>ENTER</kbd>.
+
+    </li>
     <li class="two">
         <h5>
-            Execute this command:</h5>
-        <code>makecert -r -pe -n "CN=azureconfig" -sky exchange "azureconfig.cer" -sv "azureconfig.pvk"</code>
+            Open a certificates snap-in
+        </h5>
+        a.) On the File menu, click <strong>Add/Remove Snap-in</strong>.
+        <br />
+        b.) Under Available snap-ins, double-click <strong>Certificates</strong>.
+        <br />
+        c.) Select <strong>Computer account</strong>, and then click <strong>Next</strong>.
+        <br />
+        d.) Click <strong>Local computer</strong>, and then click <strong>Finish</strong>.
         <br />
         <br />
-        <strong>Note:</strong> You can change the &quot;azureconfig&quot; parts to name
-        your certificate files as you like. They do not need to be named &quot;azureconfig&quot;,
-        and the &quot;CN=&quot; part can be any Computer Name of your choosing.
+        <strong>Tip:</strong> To avoid these steps in the future, after you have completed them for the first time, 
+        click <strong>File &gt; Save</strong>.
         <br />
+        Name the file <code>CertificatesConsole.msc</code>, and save to the default location.
         <br />
-        <img src="~/images/0435.clip_image002_2.jpg" alt="Command prompt makecert screen shot" />
+        The next time you run <code>mmc</code>, you can just click <strong>File &gt; Open</strong> and re-open your certificates console snap-in.
     </li>
     <li class="three">
         <h5>
-            You will be prompted for a password to secure the private key three times.</h5>
-        Enter a password of your choice, but either <strong>write it down and keep it somewhere
-            secure</strong> or make sure it is a password you will <strong>never forget</strong>.
+            In the Personal store, right click, under &quot;All Tasks&quot;, click Import.
+        </h5>
+        Browse to the <strong>.cer file</strong> and import the certificate.
         <br />
         <br />
-        <img src="~/images/8054.clip_image003_2.png" alt="Password prompt screen shot" />
-        <br />
-        <br />
-        This will generate an <strong>azureconfig.cer file (the public key certificate)</strong>
-        and an <strong>azureconfig.pvk file (the private key)</strong> in the folder where
-        you ran makecert from the command prompt. (Note the file names will be different
-        if you chose not to name the files &quot;azureconfig&quot;.)</li>
+        <strong>Note:</strong> If you skipped the <a href="@Url.Action("CreateCertificates", "CloudConfigCrypto")">create certificates step</a>, you can import the .CER file 
+        located in the <code>sample_certificates</code> folder of this project.
+    </li>
     <li class="four">
         <h5>
-            Enter the following command to create the .pfx file.</h5>
-        This format is used to import the private key to Windows Azure, and is needed to
-        decrypt config files.<br />
-        <strong>After the –pi switch, enter the password you chose</strong>.
-        <br />
-        <code>pvk2pfx -pvk "azureconfig.pvk" -spc "azureconfig.cer" -pfx "azureconfig.pfx" -pi
-            password-entered-in-previous-step</code></li>
-    <li class="five">
-        <h5>
-            Verify that the certificates have been created by looking in the current directory
-            in the Visual Studio command prompt.</h5>
-        You can do this by typing <code>dir</code> into the command prompt and then hitting
-        the <kbd>Enter</kbd> key.<br />
-        There should be 3 files: a *.cer file, a *.pvk file, and a *.pfx file.
+            Note the thumbprint of the certificate
+        </h5>
+        Once you have the certificate imported, right click on it and choose Open. This will bring up the Certificate dialog. 
+        Choose the details tab, scroll to the bottom and copy the thumbprint property. We will need this later.
         <br />
         <br />
-        <img src="~/images/8867.clip_image005_2.jpg" alt="Command prompt file results screen shot" /></li>
+        <strong>Tip:</strong> By default, the certificate puts spaces after every even-numbered character.
+        <br />
+        You can quickly remove these by running the following using the Package Manager Console (or powershell):
+        <br />
+        <code>"‎63 0e 33 c5 ea d4 2a 55 64 e2 2d 92 0a 0c 5a c4 b1 0c f0 52" -replace " "</code>
+        <br />
+        Just put your space-delimited thumbprint in quotes, and the above <code>-replace " "</code> command will remove the spaces for you.
+    </li>
 </ol>
+<h3>
+    Importing the Private Key (for encrypt/decrypt access)
+</h3>
+<p>
+    The steps required for importing the private key are almost exactly like the steps above for the public key.
+    The only difference is that you have to import the PFX file instead of hte CER file, and you must enter the 
+    password when doing so. <strong>Only step #3 is different.</strong>
+</p>
+<ol class="round">
+    <li class="three">
+        <h5>
+            In the Personal store, right click, under &quot;All Tasks&quot;, click Import.
+        </h5>
+        Browse to the <strong>.pfx file</strong> and import the certificate. (You will need to change the file type drop-down in order to be able to see the PFX file.)
+        <br />
+        Enter the password that was used to create the certificate.
+        <br />
+        If you want to be able to export the PFX file at a later time, check the box to make it exportable.
+        <br />
+        <br />
+        <strong>Note:</strong> If you skipped the <a href="@Url.Action("CreateCertificates", "CloudConfigCrypto")">create certificates step</a>, you can import the .PFX file 
+        located in the <code>sample_certificates</code> folder of this project.
+        <br />
+        The password is <code>pw</code>
+    </li>
+</ol>
+<p>
+    <a href="@Url.Action("CreateCertificates", "CloudConfigCrypto")">Previous Step: Create Certificates</a>
+</p>

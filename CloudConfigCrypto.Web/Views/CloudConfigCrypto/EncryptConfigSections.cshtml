@@ -1,0 +1,75 @@
+﻿@model CloudConfigCrypto.Web.Models.EncryptConfigSectionsModel
+@{
+    ViewBag.Title = "Encrypt Config Section(s)";
+}
+
+@section scripts
+{
+
+    <script type="text/javascript">
+        function EncryptViewModel() {
+            var self = this;
+
+            self.thumbprint = ko.observable();
+            self.thumbprintEl = undefined;
+            self.sampleThumbprint = '630e33c5ead42a5564e22d920a0c5ac4b10cf052'.toUpperCase();
+            self.useSampleThumbprint = function () {
+                self.thumbprint(self.sampleThumbprint);
+                return false;
+            };
+            self.useCustomThumbprint = function () {
+                self.thumbprint(undefined);
+                $(self.thumbprintEl).focus();
+                return false;
+            };
+
+            self.unencryptedSections = ko.observable();
+            self.unencryptedSectionsEl = undefined;
+            self.exampleConfigSections = '<connectionStrings>\n    <add name="DefaultConnection" connectionString="Data Source=.\SQLEXPRESS;Initial Catalog=aspnet-CloudConfigCrypto.Web-20120922133933;Integrated Security=SSPI" providerName="System.Data.SqlClient" />\n</connectionStrings>';
+            self.useExampleConfigSections = function () {
+                self.unencryptedSections(self.exampleConfigSections);
+                return false;
+            };
+            self.useCustomConfigSections = function () {
+                self.unencryptedSections(undefined);
+                $(self.unencryptedSectionsEl).focus();
+                return false;
+            };
+        };
+
+        var encryptViewModel = new EncryptViewModel();
+        ko.applyBindings(encryptViewModel);
+        encryptViewModel.thumbprint('@Model.Thumbprint');
+        encryptViewModel.unencryptedSections('@Html.Raw(Model.Unencrypted.Replace("\r", "").Replace("\n", "\\n"))');
+    </script>
+
+}
+
+<h2>@ViewBag.Title</h2>
+<form method="POST">
+    <br />
+    <label for="thumbprint">Thumbprint</label>
+    <a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> | 
+    <a href="#" data-bind="click: useCustomThumbprint">Enter custom certificate thumbprint</a>
+    <div>
+        @Html.ValidationMessageFor(m => m.Thumbprint)
+    </div>
+    <input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
+    <br />
+    <br />
+    <label for="unencrypted">Unencrypted config section(s)</label>
+    <a href="#" data-bind="click: useExampleConfigSections">Use example config sections</a> |
+    <a href="#" data-bind="click: useCustomConfigSections">Enter custom config sections</a>
+    <div>
+        @Html.ValidationMessageFor(m => m.Unencrypted)
+    </div>
+    <textarea name="unencrypted" id="unencrypted" style="width: 960px; min-height: 100px;" data-bind="value: unencryptedSections, element: 'unencryptedSectionsEl'"></textarea>
+    <br />
+    <input type="submit" value="Encrypt" />
+    @if (!string.IsNullOrWhiteSpace(Model.Encrypted))
+    {
+        <br />
+        <label>Encrypted config section(s)</label>
+        <pre style="width: 960px; overflow: auto; box-sizing: border-box; background-color: #fff; padding: 5px; border: solid 1px #e2e2e2;">@Model.Encrypted</pre>
+    }
+</form>

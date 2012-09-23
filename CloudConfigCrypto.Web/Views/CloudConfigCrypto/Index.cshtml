@@ -8,7 +8,8 @@
                 <h1>@ViewBag.Title:</h1>
                 <h2>
                     This app will help you encrypt (&amp; decrypt!) web.config (&amp; app.config!) sections
-                    for Azure, or any server where you can't touch the machine.config file.</h2>
+                    for Azure, or any server where you can't touch the machine.config file.
+                </h2>
             </hgroup>
             <p>
                 All of this is based on a <a href="http://nuget.org/packages/Pkcs12ProtectedConfigurationProvider"
@@ -31,11 +32,13 @@
     </section>
 }
 <h3>
-    Follow this process:</h3>
+    Follow this process:
+</h3>
 <ol class="round">
     <li class="one">
         <h5>
-            Create a certificate</h5>
+            Create public &amp; private key certificates
+        </h5>
         Follow <a href="@Url.Action("CreateCertificates", "CloudConfigCrypto")">these instructions</a>
         to create the certificates that will be used to encrypt and decrypt your config
         file(s).
@@ -45,13 +48,13 @@
     </li>
     <li class="two">
         <h5>
-            Import the certificates into your local certificate store</h5>
+            Import the certificates into your local certificate store
+        </h5>
         Follow <a href="@Url.Action("ImportCertificatesLocally", "CloudConfigCrypto")">these
             instructions</a> to import certificates into your local machine.</li>
     <li class="three">
         <h5>
-            Find Web Hosting</h5>
-        You can easily find a web hosting company that offers the right mix of features
-        and price for your applications. <a href="http://go.microsoft.com/fwlink/?LinkId=245157">
-            Learn more…</a> </li>
+            Encrypt Config Section(s)
+        </h5>
+        After you have imported a certificate and noted the thumbprint, you are ready to <a href="@Url.Action("EncryptConfigSections", "CloudConfigCrypto")">encrypt config sections</a>.</li>
 </ol>

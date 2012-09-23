@@ -134,10 +134,10 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\CloudConfigCryptoController.cs" />
+    <Compile Include="Models\EncryptConfigSectionsInputModel.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -201,6 +201,7 @@
     <Content Include="images\8054.clip_image003_2.png" />
     <Content Include="images\8867.clip_image005_2.jpg" />
     <Content Include="sample_certificates\sample_config_crypto_readme.txt" />
+    <Content Include="scripts\app\knockout.binding-handlers.js" />
     <Content Include="scripts\jquery-1.8.2-vsdoc.js" />
     <Content Include="scripts\jquery-1.8.2.js" />
     <Content Include="scripts\jquery-1.8.2.min.js" />
@@ -216,7 +217,9 @@
     <Content Include="scripts\knockout-2.1.0.debug.js" />
     <Content Include="scripts\knockout-2.1.0.js" />
     <Content Include="scripts\modernizr-2.6.2.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -260,6 +263,7 @@
     <None Include="sample_certificates\sample_config_crypto_cert.pfx" />
     <None Include="sample_certificates\sample_config_crypto_cert.pvk" />
     <Content Include="Views\CloudConfigCrypto\ImportCertificatesLocally.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\EncryptConfigSections.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
