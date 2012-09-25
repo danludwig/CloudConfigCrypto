@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web.Mvc;
@@ -65,8 +66,8 @@ namespace CloudConfigCrypto.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // provider
-            const string configProtectedDataTemplate = @"
+            // provider node
+            const string configProtectedDataFormat = @"
     <configProtectedData>
         <providers>
             <add name=""CustomProvider"" 
@@ -74,31 +75,40 @@ namespace CloudConfigCrypto.Web.Controllers
                     type=""Pkcs12ProtectedConfigurationProvider.Pkcs12ProtectedConfigurationProvider, PKCS12ProtectedConfigurationProvider, Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d"" />
         </providers>
     </configProtectedData>" + "\n    {1}";
-            var unencrypted = string.Format(configProtectedDataTemplate, model.Thumbprint, model.Unencrypted.Replace("\r", "").Replace("\n", "\n    ").Replace("\t", "    ") + "\n");
 
+            // unencrypted sections
+            var unencrypted = model.Unencrypted.Trim().Replace("\r", "").Replace("\t", "    ").Replace("\n", "\n    ") + "\n";
+            unencrypted = string.Format(configProtectedDataFormat, model.Thumbprint, unencrypted);
+
+            // config document
             var config = new ConfigXmlDocument
             {
-                InnerXml = "<configuration></configuration>"
+                InnerXml = "<configuration></configuration>",
+                DocumentElement = { InnerXml = unencrypted },
             };
-            config.CreateElement("configuration");
-            config.DocumentElement.InnerXml = unencrypted;
 
-            // encrypt
+            // initialize provider
             _provider.Initialize("CustomProvider", new NameValueCollection
             {
                 { "thumbprint", model.Thumbprint },
             });
 
+            // encrypt
+            var configRoot = config.DocumentElement;
+            Debug.Assert(configRoot != null);
             XmlNode lastWhitespace = config.CreateTextNode("\n    ");
-            foreach (XmlNode node in config.DocumentElement.ChildNodes)
+            foreach (XmlNode node in configRoot.ChildNodes)
             {
+                // skip non-encryptable nodes
                 if (node.Name == "#whitespace") lastWhitespace = node;
                 if (node.Name == "configProtectedData" || node.Name == "#whitespace") continue;
+
                 var encrypted = _provider.Encrypt(node);
                 var attribute = config.CreateAttribute("configProtectionProvider");
                 attribute.Value = "CustomProvider";
+                Debug.Assert(node.Attributes != null);
                 node.Attributes.Append(attribute);
-                node.InnerXml = FormatEncrypted(encrypted.OuterXml, lastWhitespace.OuterXml);
+                node.InnerXml = FormatXml(encrypted.OuterXml, lastWhitespace.OuterXml);
             }
 
             model.Encrypted = config.OuterXml;
@@ -106,7 +116,7 @@ namespace CloudConfigCrypto.Web.Controllers
             return View(model);
         }
 
-        private string FormatEncrypted(string outerXml, string lastWhitespace)
+        private string FormatXml(string outerXml, string lastWhitespace)
         {
             var formatted = new StringBuilder();
             var lastWhitespaceWithoutNewline = lastWhitespace.Replace("\n", "");
@@ -117,25 +127,25 @@ namespace CloudConfigCrypto.Web.Controllers
                 if (formatted.Length == 0 || formatted.ToString().EndsWith(">"))
                     formatted.Append("\n");
                 var topOfStack = fragmentStack.FirstOrDefault();
-                if (topOfStack != null && !topOfStack.EndsWith(">") && fragment.Substring(1, fragment.IndexOf(">")).StartsWith(topOfStack.Substring(0, topOfStack.IndexOf(">"))))
+                if (topOfStack != null
+                    && !topOfStack.EndsWith(">")
+                    && fragment.Substring(1, fragment.IndexOf(">", StringComparison.Ordinal))
+                        .StartsWith(topOfStack.Substring(0, topOfStack.IndexOf(">", StringComparison.Ordinal))))
                 {
                     fragmentStack.Pop();
                 }
-                else if (topOfStack != null && topOfStack.StartsWith(fragment.Substring(1, fragment.IndexOf(">") - 1)))
+                else if (topOfStack != null
+                    && topOfStack.StartsWith(fragment.Substring(1, fragment.IndexOf(">", StringComparison.Ordinal) - 1)))
                 {
                     for (var i = 0; i < fragmentStack.Count + 1; i++)
-                    {
                         formatted.Append(lastWhitespaceWithoutNewline);
-                    }
                     fragmentStack.Pop();
                 }
                 else
                 {
                     fragmentStack.Push(fragment);
                     for (var i = 0; i < fragmentStack.Count + 1; i++)
-                    {
                         formatted.Append(lastWhitespaceWithoutNewline);
-                    }
                 }
                 formatted.Append("<");
                 formatted.Append(fragment);

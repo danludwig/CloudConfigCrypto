@@ -66,10 +66,11 @@
     <textarea name="unencrypted" id="unencrypted" style="width: 960px; min-height: 100px;" data-bind="value: unencryptedSections, element: 'unencryptedSectionsEl'"></textarea>
     <br />
     <input type="submit" value="Encrypt" />
-    @if (!string.IsNullOrWhiteSpace(Model.Encrypted))
-    {
-        <br />
-        <label>Encrypted config section(s)</label>
-        <pre style="width: 960px; overflow: auto; box-sizing: border-box; background-color: #fff; padding: 5px; border: solid 1px #e2e2e2;">@Model.Encrypted</pre>
-    }
 </form>
+@if (!string.IsNullOrWhiteSpace(Model.Encrypted))
+{
+    <br />
+    <label>Encrypted config section(s)</label>@*
+        <pre style="width: 960px; overflow: auto; box-sizing: border-box; background-color: #fff; padding: 5px; border: solid 1px #e2e2e2;">@Model.Encrypted</pre>*@
+    <textarea name="encrypted" id="encrypted" style="width: 960px; min-height: 100px;">@Model.Encrypted</textarea>
+}
