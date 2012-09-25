@@ -65,7 +65,7 @@ namespace CloudConfigCrypto.Web.Controllers
                 store.Open(OpenFlags.ReadOnly);
                 var certificates = store.Certificates
                     .Find(X509FindType.FindByThumbprint, model.Thumbprint, false);
-                if (certificates.Count < 1)
+                if (certificates.Count < 1 || !string.Equals(certificates[0].Thumbprint, model.Thumbprint, StringComparison.OrdinalIgnoreCase))
                     ModelState.AddModelError("Thumbprint", string.Format(
                         "Your local computer certificate store does not contain a certificate with the thumbprint '{0}'.",
                             model.Thumbprint));
@@ -94,11 +94,6 @@ namespace CloudConfigCrypto.Web.Controllers
             };
             config.CreateElement("configuration");
             config.DocumentElement.InnerXml = unencrypted;
-
-            //xmlDocument.AppendChild(new XmlNode()
-            //                            {
-            //                                InnerXml = unencrypted
-            //                            });
 
             // encrypt
             var assembly = Assembly.Load("Pkcs12ProtectedConfigurationProvider");
