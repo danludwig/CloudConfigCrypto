@@ -22,7 +22,7 @@ namespace CloudConfigCrypto.Web.Models
             _value = value;
             var store = new X509Store(StoreName, StoreLocation);
             store.Open(OpenFlags.ReadOnly);
-            var certificates = store.Certificates.Find(FindType, value, true);
+            var certificates = store.Certificates.Find(FindType, value, false);
 
             if (certificates.Count < 1)
                 return false;

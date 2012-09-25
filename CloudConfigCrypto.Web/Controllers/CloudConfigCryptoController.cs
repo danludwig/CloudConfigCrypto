@@ -1,19 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Reflection;
+using System.Configuration;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Web.Mvc;
 using System.Xml;
 using CloudConfigCrypto.Web.Models;
-using System.Configuration;
 
 namespace CloudConfigCrypto.Web.Controllers
 {
     public class CloudConfigCryptoController : Controller
     {
+        private readonly ProtectedConfigurationProvider _provider;
+
+        public CloudConfigCryptoController(ProtectedConfigurationProvider provider)
+        {
+            _provider = provider;
+        }
+
         [HttpGet]
         public ActionResult Index()
         {
@@ -79,10 +84,7 @@ namespace CloudConfigCrypto.Web.Controllers
             config.DocumentElement.InnerXml = unencrypted;
 
             // encrypt
-            var assembly = Assembly.Load("Pkcs12ProtectedConfigurationProvider");
-            var providerType = assembly.GetTypes().First(t => typeof(ProtectedConfigurationProvider).IsAssignableFrom(t));
-            var provider = Activator.CreateInstance(providerType) as ProtectedConfigurationProvider;
-            provider.Initialize("CustomProvider", new NameValueCollection
+            _provider.Initialize("CustomProvider", new NameValueCollection
             {
                 { "thumbprint", model.Thumbprint },
             });
@@ -92,7 +94,7 @@ namespace CloudConfigCrypto.Web.Controllers
             {
                 if (node.Name == "#whitespace") lastWhitespace = node;
                 if (node.Name == "configProtectedData" || node.Name == "#whitespace") continue;
-                var encrypted = provider.Encrypt(node);
+                var encrypted = _provider.Encrypt(node);
                 var attribute = config.CreateAttribute("configProtectionProvider");
                 attribute.Value = "CustomProvider";
                 node.Attributes.Append(attribute);
