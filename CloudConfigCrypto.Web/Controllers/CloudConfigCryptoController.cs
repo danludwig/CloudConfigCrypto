@@ -57,23 +57,6 @@ namespace CloudConfigCrypto.Web.Controllers
         [HttpPost]
         public ActionResult EncryptConfigSections(EncryptConfigSectionsModel model)
         {
-            // check for certificate
-            X509Certificate2 certificate = null;
-            if (ModelState.IsValid)
-            {
-                var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
-                store.Open(OpenFlags.ReadOnly);
-                var certificates = store.Certificates
-                    .Find(X509FindType.FindByThumbprint, model.Thumbprint, false);
-                if (certificates.Count < 1 || !string.Equals(certificates[0].Thumbprint, model.Thumbprint, StringComparison.OrdinalIgnoreCase))
-                    ModelState.AddModelError("Thumbprint", string.Format(
-                        "Your local computer certificate store does not contain a certificate with the thumbprint '{0}'.",
-                            model.Thumbprint));
-                else
-                    certificate = new X509Certificate2(certificates[0]);
-                store.Close();
-            }
-
             if (!ModelState.IsValid)
                 return View(model);
 

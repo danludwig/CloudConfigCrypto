@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography.X509Certificates;
 using System.Web.Mvc;
 
 namespace CloudConfigCrypto.Web.Models
@@ -13,6 +14,8 @@ namespace CloudConfigCrypto.Web.Models
 
         [DisplayFormat(ConvertEmptyStringToNull = false)]
         [Required(ErrorMessage = "Thumbprint is required.")]
+        [CertificateExists(StoreName = StoreName.My, StoreLocation = StoreLocation.LocalMachine, FindType = X509FindType.FindByThumbprint, 
+            ErrorMessage = "Your local computer certificate store does not contain a certificate with the thumbprint '{1}'.")]
         public string Thumbprint { get; set; }
 
         [AllowHtml]
