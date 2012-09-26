@@ -282,7 +282,7 @@
     <None Include="sample_certificates\sample_config_crypto_cert.pfx" />
     <None Include="sample_certificates\sample_config_crypto_cert.pvk" />
     <Content Include="Views\CloudConfigCrypto\ImportCertificatesLocally.cshtml" />
-    <Content Include="Views\CloudConfigCrypto\EncryptConfigSections.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\Encrypt.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

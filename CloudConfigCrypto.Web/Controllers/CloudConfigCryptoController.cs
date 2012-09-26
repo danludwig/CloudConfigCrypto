@@ -55,7 +55,7 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpGet]
-        public ActionResult EncryptConfigSections()
+        public ActionResult Encrypt()
         {
             return View();
         }
@@ -69,7 +69,7 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpPost]
-        public ActionResult EncryptConfigSections(EncryptionInput model)
+        public ActionResult Encrypt(EncryptionInput model)
         {
             if (!ModelState.IsValid)
                 return View(model);
