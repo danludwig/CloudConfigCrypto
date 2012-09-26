@@ -20,6 +20,11 @@ namespace CloudConfigCrypto.Web.Models
         public override bool IsValid(object value)
         {
             _value = value;
+            var valueAsString = value as string;
+
+            if (string.IsNullOrWhiteSpace(valueAsString)) return true;
+
+
             var store = new X509Store(StoreName, StoreLocation);
             store.Open(OpenFlags.ReadOnly);
             var certificates = store.Certificates.Find(FindType, value, false);
@@ -30,12 +35,8 @@ namespace CloudConfigCrypto.Web.Models
             switch (FindType)
             {
                 case X509FindType.FindByThumbprint:
-                    if ((value as string) == null)
-                        return false;
-
                     if (!string.Equals(certificates[0].Thumbprint, value.ToString(), StringComparison.OrdinalIgnoreCase))
                         return false;
-
                     break;
 
                 default:

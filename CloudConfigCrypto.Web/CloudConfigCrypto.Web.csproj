@@ -233,6 +233,8 @@
     <Content Include="scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="scripts\knockout-2.1.0.debug.js" />
     <Content Include="scripts\knockout-2.1.0.js" />
+    <Content Include="scripts\knockout.validation.debug.js" />
+    <Content Include="scripts\knockout.validation.js" />
     <Content Include="scripts\modernizr-2.6.2.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>

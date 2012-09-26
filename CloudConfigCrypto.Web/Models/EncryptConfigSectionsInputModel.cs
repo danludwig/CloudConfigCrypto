@@ -15,7 +15,7 @@ namespace CloudConfigCrypto.Web.Models
         [DisplayFormat(ConvertEmptyStringToNull = false)]
         [Required(ErrorMessage = "Thumbprint is required.")]
         [CertificateExists(StoreName = StoreName.My, StoreLocation = StoreLocation.LocalMachine, FindType = X509FindType.FindByThumbprint, 
-            ErrorMessage = "Your local computer certificate store does not contain a certificate with the thumbprint '{1}'.")]
+            ErrorMessage = "Your local computer certificate store does not contain a certificate with thumbprint '{1}'.")]
         public string Thumbprint { get; set; }
 
         [AllowHtml]

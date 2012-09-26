@@ -61,6 +61,14 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpPost]
+        public JsonResult ValidateThumbprint(EncryptConfigSectionsModel model)
+        {
+            if (ModelState.IsValidField("Thumbprint")) return Json(true);
+            var errorMessage = ModelState["Thumbprint"].Errors.First().ErrorMessage;
+            return Json(errorMessage);
+        }
+
+        [HttpPost]
         public ActionResult EncryptConfigSections(EncryptConfigSectionsModel model)
         {
             if (!ModelState.IsValid)
@@ -91,11 +99,9 @@ namespace CloudConfigCrypto.Web.Controllers
             // encrypt
             var configRoot = config.DocumentElement;
             Debug.Assert(configRoot != null);
-            XmlNode lastWhitespace = config.CreateTextNode("\n    ");
             foreach (XmlNode node in configRoot.ChildNodes)
             {
                 // skip non-encryptable nodes
-                if (node.Name == "#whitespace") lastWhitespace = node;
                 if (node.Name == "configProtectedData" || node.Name == "#whitespace") continue;
 
                 var encrypted = _provider.Encrypt(node);
@@ -103,11 +109,9 @@ namespace CloudConfigCrypto.Web.Controllers
                 attribute.Value = "CustomProvider";
                 Debug.Assert(node.Attributes != null);
                 node.Attributes.Append(attribute);
-                //node.InnerXml = FormatXml(encrypted.OuterXml, lastWhitespace.OuterXml);
                 node.InnerXml = encrypted.OuterXml;
             }
 
-            //model.Encrypted = config.OuterXml;
             model.Encrypted = FormatXml(config.OuterXml, "");
 
             return View(model);

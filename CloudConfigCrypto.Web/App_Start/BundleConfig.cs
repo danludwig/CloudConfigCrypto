@@ -15,6 +15,7 @@ namespace CloudConfigCrypto.Web
 
             bundles.Add(new ScriptBundle("~/bundles/knockout").Include(
                         "~/Scripts/knockout-{version}.js",
+                        "~/scripts/knockout.validation*",
                         "~/scripts/app/knockout.binding-handlers.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(

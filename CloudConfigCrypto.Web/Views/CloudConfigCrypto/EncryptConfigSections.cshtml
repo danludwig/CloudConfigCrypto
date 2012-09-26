@@ -10,7 +10,31 @@
         function EncryptViewModel() {
             var self = this;
 
-            self.thumbprint = ko.observable();
+            // thumbprint
+            self.thumbprint = ko.observable().extend({
+                required: {
+                    message: 'Thumbprint is required.'
+                },
+                validation: {
+                    validator: function (val) {
+                        var isValid = false,
+                            validation = this;
+                        $.ajax({
+                            url: '/CloudConfigCrypto/ValidateThumbprint',
+                            type: 'POST',
+                            data: { thumbprint: val },
+                            async: false
+                        })
+                        .success(function (response) {
+                            if (response === true) isValid = true;
+                            else validation.message = response;
+                        });
+                        return isValid;
+                    },
+                    message: 'Your local computer certificate store does not contain a certificate with this thumbprint.',
+                    params: self
+                }
+            });
             self.thumbprintEl = undefined;
             self.sampleThumbprint = '630e33c5ead42a5564e22d920a0c5ac4b10cf052'.toUpperCase();
             self.useSampleThumbprint = function () {
@@ -23,54 +47,73 @@
                 return false;
             };
 
-            self.unencryptedSections = ko.observable();
-            self.unencryptedSectionsEl = undefined;
-            self.exampleConfigSections = '<connectionStrings>\n    <add name="DefaultConnection" connectionString="Data Source=.\\SQLEXPRESS;Initial Catalog=aspnet-CloudConfigCrypto.Web-20120922133933;Integrated Security=SSPI" providerName="System.Data.SqlClient" />\n</connectionStrings>';
+            // unencrypted
+            self.unencrypted = ko.observable().extend({
+                required: {
+                    message: 'Unencrypted config section(s) is required.'
+                }
+            });
+            self.unencryptedEl = undefined;
+            self.exampleConfigSections = '<connectionStrings>\n  <add name="DefaultConnection" connectionString="Data Source=.\\SQLEXPRESS;Initial Catalog=aspnet-CloudConfigCrypto.Web-20120922133933;Integrated Security=SSPI" providerName="System.Data.SqlClient" />\n</connectionStrings>';
             self.useExampleConfigSections = function () {
-                self.unencryptedSections(self.exampleConfigSections);
+                self.unencrypted(self.exampleConfigSections);
                 return false;
             };
             self.useCustomConfigSections = function () {
-                self.unencryptedSections(undefined);
-                $(self.unencryptedSectionsEl).focus();
+                self.unencrypted(undefined);
+                $(self.unencryptedEl).focus();
                 return false;
+            };
+
+            self.submit = function () {
+                if (!self.isValid()) {
+                    self.errors.showAllMessages();
+                }
+                else {
+                    alert('form submitting...');
+                }
             };
         };
 
         var encryptViewModel = new EncryptViewModel();
-        ko.applyBindings(encryptViewModel);
-        encryptViewModel.thumbprint('@Model.Thumbprint');
-        encryptViewModel.unencryptedSections('@Html.Raw(Model.Unencrypted.Replace("\r", "").Replace("\n", "\\n"))');
+        ko.applyBindingsWithValidation(ko.validatedObservable(encryptViewModel), document.body, {
+            insertMessages: false,
+            decorateElement: true,
+            errorElementClass: 'input-validation-error',
+            errorMessageClass: 'field-validation-error'
+        });
+        //encryptViewModel.thumbprint('@Model.Thumbprint');
+        //encryptViewModel.unencrypted('@Html.Raw(Model.Unencrypted.Replace("\r", "").Replace("\n", "\\n"))');
     </script>
 
 }
 
 <h2>@ViewBag.Title</h2>
-<form method="POST">
+<form method="POST" data-bind="submit: submit">
     <br />
     <label for="thumbprint">Thumbprint</label>
     <a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> | 
     <a href="#" data-bind="click: useCustomThumbprint">Enter custom certificate thumbprint</a>
     <div>
-        @Html.ValidationMessageFor(m => m.Thumbprint)
+        <span class="field-validation-error" data-bind="validationMessage: thumbprint"></span>
     </div>
-    <input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
+    <input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, validationElement: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
     <br />
     <br />
     <label for="unencrypted">Unencrypted config section(s)</label>
     <a href="#" data-bind="click: useExampleConfigSections">Use example config sections</a> |
     <a href="#" data-bind="click: useCustomConfigSections">Enter custom config sections</a>
     <div>
-        @Html.ValidationMessageFor(m => m.Unencrypted)
+        <span class="field-validation-error" data-bind="validationMessage: unencrypted"></span>
     </div>
-    <textarea name="unencrypted" id="unencrypted" style="width: 960px; min-height: 100px;" data-bind="value: unencryptedSections, element: 'unencryptedSectionsEl'"></textarea>
+    <textarea name="unencrypted" id="unencrypted" style="width: 960px; min-height: 300px;" data-bind="value: unencrypted, validationElement: unencrypted, element: 'unencryptedEl'"></textarea>
     <br />
     <input type="submit" value="Encrypt" />
 </form>
-@if (!string.IsNullOrWhiteSpace(Model.Encrypted))
+@*@if (!string.IsNullOrWhiteSpace(Model.Encrypted))
 {
     <br />
-    <label>Encrypted config section(s)</label>@*
+    <label>Encrypted config section(s)</label>*@@*
         <pre style="width: 960px; overflow: auto; box-sizing: border-box; background-color: #fff; padding: 5px; border: solid 1px #e2e2e2;">@Model.Encrypted</pre>*@
-    <textarea name="encrypted" id="encrypted" style="width: 960px; min-height: 100px;">@Model.Encrypted</textarea>
-}
+    @*<textarea name="encrypted" id="encrypted" style="width: 960px; min-height: 100px;">@Model.Encrypted</textarea>
+}*@
