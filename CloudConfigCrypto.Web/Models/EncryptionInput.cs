@@ -22,6 +22,5 @@ namespace CloudConfigCrypto.Web.Models
         [DisplayFormat(ConvertEmptyStringToNull = false)]
         [Required(ErrorMessage = "Unencrypted config section(s) is required.")]
         public string Unencrypted { get; set; }
-        public string Encrypted { get; set; }
     }
 }

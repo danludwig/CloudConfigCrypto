@@ -217,6 +217,7 @@
     <Content Include="images\0435.clip_image002_2.jpg" />
     <Content Include="images\8054.clip_image003_2.png" />
     <Content Include="images\8867.clip_image005_2.jpg" />
+    <Content Include="images\spinner.gif" />
     <Content Include="sample_certificates\sample_config_crypto_readme.txt" />
     <Content Include="scripts\app\knockout.binding-handlers.js" />
     <Content Include="scripts\jquery-1.8.2-vsdoc.js" />

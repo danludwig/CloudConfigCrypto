@@ -72,11 +72,12 @@ namespace CloudConfigCrypto.Web.Controllers
         public ActionResult Encrypt(EncryptionInput model)
         {
             if (!ModelState.IsValid)
-                return View(model);
+                //return View(model);
+                throw new InvalidOperationException("At least one validation rule is not being enforced by the client.");
 
             // provider node
             const string configProtectedDataFormat = "<configProtectedData><providers><add name=\"CustomProvider\" thumbprint=\"{0}\" " +
-                    "type=\"Pkcs12ProtectedConfigurationProvider.Pkcs12ProtectedConfigurationProvider, PKCS12ProtectedConfigurationProvider, " + 
+                    "type=\"Pkcs12ProtectedConfigurationProvider.Pkcs12ProtectedConfigurationProvider, PKCS12ProtectedConfigurationProvider, " +
                     "Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d\" /></providers></configProtectedData>{1}";
 
             // unencrypted sections
@@ -104,17 +105,25 @@ namespace CloudConfigCrypto.Web.Controllers
                 // skip non-encryptable nodes
                 if (node.Name == "configProtectedData" || node.Name == "#whitespace") continue;
 
-                var encrypted = _provider.Encrypt(node);
+                var encryptedNode = _provider.Encrypt(node);
                 var attribute = config.CreateAttribute("configProtectionProvider");
                 attribute.Value = "CustomProvider";
                 Debug.Assert(node.Attributes != null);
                 node.Attributes.Append(attribute);
-                node.InnerXml = encrypted.OuterXml;
+                node.InnerXml = encryptedNode.OuterXml;
             }
 
-            model.Encrypted = FormatXml(config.OuterXml, "");
+            var encrypted = FormatXml(config.OuterXml, "");
 
-            return View(model);
+            return Json(encrypted);
+        }
+
+        [HttpPost]
+        [ValidateInput(false)]
+        public FileResult Save(string content)
+        {
+            var bytes = Encoding.UTF8.GetBytes(content);
+            return File(bytes, "text/plain", "Web.Encrypted.config");
         }
 
         private string FormatXml(string outerXml, string lastWhitespace)

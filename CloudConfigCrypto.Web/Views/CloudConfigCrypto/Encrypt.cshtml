@@ -53,7 +53,7 @@
                 }
             });
             self.unencryptedEl = undefined;
-            self.exampleConfigSections = '<connectionStrings>\n  <add name="DefaultConnection" connectionString="Data Source=.\\SQLEXPRESS;Initial Catalog=aspnet-CloudConfigCrypto.Web-20120922133933;Integrated Security=SSPI" providerName="System.Data.SqlClient" />\n</connectionStrings>';
+            self.exampleConfigSections = '<connectionStrings>\n  <add name="DefaultConnection" connectionString="Data Source=.\\SQLEXPRESS;Initial Catalog=aspnet-CloudConfigCrypto.Web-20120922133933;Integrated Security=SSPI" providerName="System.Data.SqlClient" />\n</connectionStrings>\n<appSettings>\n  <add key=\"RecaptchaPrivateKey\" value=\"8UxmrfPQHHHHHVsEPrVwEgOJCIwQpdVWZAlw9plm\" />\n  <add key=\"GeoPlanetAppId\" value=\"XjFhslJ7dKLdfKFdK_lksdfkL9sdL9fdKfdjad-\" />\n</appSettings>';
             self.useExampleConfigSections = function () {
                 self.unencrypted(self.exampleConfigSections);
                 return false;
@@ -64,13 +64,49 @@
                 return false;
             };
 
+            // encrypt
+            self.encrypted = ko.observable();
+            self.encryptedEl = undefined;
+            self.isEncrypting = ko.observable(false);
+            self.submitText = ko.computed(function () {
+                return self.isEncrypting() ? 'Encrypting...' : 'Encrypt';
+            });
             self.submit = function () {
                 if (!self.isValid()) {
                     self.errors.showAllMessages();
                 }
                 else {
-                    alert('form submitting...');
+                    self.isEncrypting(true);
+                    $.ajax({
+                        url: '/CloudConfigCrypto/Encrypt',
+                        type: 'POST',
+                        data: {
+                            thumbprint: self.thumbprint(),
+                            unencrypted: self.unencrypted()
+                        }
+                    })
+                    .success(function (response) {
+                        self.encrypted(response);
+                        $('#dialog').dialog({
+                            height: 500,
+                            width: 960
+                        });
+                        $(self.encryptedEl).select();
+                    })
+                    .error(function () {
+                        alert('something went wrong on the server :(');
+                    })
+                    .complete(function () {
+                        self.isEncrypting(false);
+                    });
                 }
+            };
+            
+            // download
+            self.download = function (vm, e) {
+                $(e.target).closest('form').submit();
+                $(self.encryptedEl).select();
+                return false;
             };
         };
 
@@ -105,12 +141,14 @@
     </div>
     <textarea name="unencrypted" id="unencrypted" style="width: 960px; min-height: 300px;" data-bind="value: unencrypted, validationElement: unencrypted, element: 'unencryptedEl'"></textarea>
     <br />
-    <input type="submit" value="Encrypt" />
+    <input type="submit" value="Encrypt" data-bind="value: submitText, enable: !isEncrypting()" />
+    <img data-bind="visible: isEncrypting" src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
 </form>
-@*@if (!string.IsNullOrWhiteSpace(Model.Encrypted))
-{
-    <br />
-    <label>Encrypted config section(s)</label>*@@*
-        <pre style="width: 960px; overflow: auto; box-sizing: border-box; background-color: #fff; padding: 5px; border: solid 1px #e2e2e2;">@Model.Encrypted</pre>*@
-    @*<textarea name="encrypted" id="encrypted" style="width: 960px; min-height: 100px;">@Model.Encrypted</textarea>
-}*@
+<div id="dialog" title="Encrypted config section(s)" style="display: none;">
+    <form method="POST" action="@Url.Action("Save", "CloudConfigCrypto")">
+        Hit <kbd>CTRL + C</kbd> to copy, or
+        <a href="@Url.Action("Save", "CloudConfigCrypto")" data-bind="click: download">Save to file</a>.
+        <input name="content" type="hidden" data-bind="value: encrypted" />
+    </form>
+    <textarea data-bind="value: encrypted, element: 'encryptedEl'" style="width: 900px; height: 400px;"></textarea>
+</div>
