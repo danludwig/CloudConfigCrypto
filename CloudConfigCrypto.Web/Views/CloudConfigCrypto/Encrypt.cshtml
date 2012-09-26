@@ -154,6 +154,7 @@
         <a href="" data-bind="click: selectEncrypted">Select the results</a> &amp; hit <kbd>CTRL + C</kbd> to copy, or
         <a href="@Url.Action("Save", "CloudConfigCrypto")" data-bind="click: download">Save to file</a>.
         <input name="content" type="hidden" data-bind="value: encrypted" />
+        <input name="context" type="hidden" value="Encrypted" />
     </form>
     <textarea data-bind="value: encrypted, element: 'encryptedEl'" style="width: 900px; height: 400px;"></textarea>
 </div>

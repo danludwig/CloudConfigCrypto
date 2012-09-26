@@ -6,5 +6,7 @@ namespace CloudConfigCrypto.Web.Models
     {
         [AllowHtml]
         public string Content { get; set; }
+
+        public string Context { get; set; }
     }
 }

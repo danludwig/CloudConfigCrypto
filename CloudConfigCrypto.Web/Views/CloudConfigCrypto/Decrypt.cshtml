@@ -2,4 +2,160 @@
     ViewBag.Title = "Decrypt Config Section(s)";
 }
 
-<h2>Decrypt</h2>
+@section scripts
+{
+
+    <script type="text/javascript">
+        function DecryptViewModel() {
+            var self = this;
+
+            // thumbprint
+            self.thumbprint = ko.observable().extend({
+                required: {
+                    message: 'Thumbprint is required.'
+                },
+                validation: {
+                    validator: function (val) {
+                        var isValid = false,
+                            validation = this;
+                        $.ajax({
+                            url: '/CloudConfigCrypto/ValidateThumbprint',
+                            type: 'POST',
+                            data: { thumbprint: val },
+                            async: false
+                        })
+                        .success(function (response) {
+                            if (response === true) isValid = true;
+                            else validation.message = response;
+                        });
+                        return isValid;
+                    },
+                    message: 'Your local computer certificate store does not contain a certificate with this thumbprint.',
+                    params: self
+                }
+            });
+            self.thumbprintEl = undefined;
+            self.sampleThumbprint = '630e33c5ead42a5564e22d920a0c5ac4b10cf052'.toUpperCase();
+            self.useSampleThumbprint = function () {
+                self.thumbprint(self.sampleThumbprint);
+                return false;
+            };
+            self.useCustomThumbprint = function () {
+                self.thumbprint(undefined);
+                $(self.thumbprintEl).focus();
+                return false;
+            };
+
+            // encrypted
+            self.encrypted = ko.observable().extend({
+                required: {
+                    message: 'Encrypted config section(s) is required.'
+                }
+            });
+            self.encryptedEl = undefined;
+            self.exampleConfigSections = '  <connectionStrings configProtectionProvider="CustomProvider">\n    <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns="http://www.w3.org/2001/04/xmlenc#">\n      <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes192-cbc" />\n      <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">\n        <EncryptedKey xmlns="http://www.w3.org/2001/04/xmlenc#">\n          <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />\n          <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">\n            <KeyName>rsaKey</KeyName>\n          </KeyInfo>\n          <CipherData>\n            <CipherValue>JK8UQBAQTgmMvuOsrnc6h2c3Cu7KwWwvduS9uhrN2O2l0tghF0fu+brBIJecn6AkZ4BOjrXDl5tODrM8Yl2m60G6tNl+lRjV10eypiV71Y3nFLO+kMjD3Lhsl0i7tD4QEfG9VioQ4sJw6AswoxDfMTsfpVV1vj81L+4qoLL0oOe+dECOyBjYNKBsN3ATyf2dynHA1V7g8JSIv8/J1Zn5rnd2LXB7tp2Y1xqRv5Bk/tqGT6z8AmFkwyOqfOEzRFUnF9R8RaaJ1Pz3GBcf7HA0+AZB4wrviWSTfFmeHEtbr/ElrzPXsrIarDoFV8vl004uP/GzM+vlrIphjR/zq/ioyw==</CipherValue>\n          </CipherData>\n        </EncryptedKey>\n      </KeyInfo>\n      <CipherData>\n        <CipherValue>6RcEaEMO5yeZ4XjcojN2NwXD/AoSNQk7ponuqUc7nPIPfg2Y+cJ8sOlx4pke4/NrMFwWDoPez9osAtiYr2O/BC8QWHM5OlzF0J6T1hwDlB6I3y4SHP7hU9O9lO7Cm8DcdgQpUB2cRFiE0bEkaNR7HNwN0opMcH2ajDCrdkfnG822c/zZ6zsrkYH7tpcQda+h5atCUkIWUI8PQERrr+it1lbx7HUilZfP88LaHVBP9y0u8IBuXFiRfnJhaSWvsO6lxZcSAjoiwX23kxAVerVDn9uGU9cM6GNVFah8WFAAuNoOWnMs6xV7y/JSh5yTeTIQVYdX7z2KvuTyS0B7tyY+AQ92fZNV2ntizzjJq3bf/wA=</CipherValue>\n      </CipherData>\n    </EncryptedData>\n  </connectionStrings>\n  <appSettings configProtectionProvider="CustomProvider">\n    <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns="http://www.w3.org/2001/04/xmlenc#">\n      <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes192-cbc" />\n      <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">\n        <EncryptedKey xmlns="http://www.w3.org/2001/04/xmlenc#">\n          <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5" />\n          <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">\n            <KeyName>rsaKey</KeyName>\n          </KeyInfo>\n          <CipherData>\n            <CipherValue>RVsQoLnlMRNf+yNvgXa3pnLiY+LNykYvgWadQh7HASPtz4BXx9xAT989OI11KmcWgLRAqQzLgt3WtDfTKcyK78pYwBr3AwHQ8rCzQQ1OWxMXqbIg2bTa+Ohqsk6RAp9FTFWS5eafzylFVI3bYYM/4I51PqpRXg2VTufRYJCEeDi+xjqgvexZtNFTLcm/AzSF4opETlYr9MWjkih/Vb2agYthRRa8VIO5PCIphol9uu7pEf4RsYo3NudN64+3IlAZjR1vojnRwa4vG/FUcVJbzBWS94I1yshp0/Y0lqhQ8jky06rqEe494edlP0JlzBHPpYSSdoh1DnDueheWf7/DTw==</CipherValue>\n          </CipherData>\n        </EncryptedKey>\n      </KeyInfo>\n      <CipherData>\n        <CipherValue>yeza4BzCplVqBb0DKjBY60HKegGIomSqB0LwhYW1UboftwUQmOkShxpuyXKyLuJa6z7jt4UmrlcSDAIBD5s1cgRYQ070qftCYxTnX4sPvva/V5cSCeKZ2vcZZRSSDC9ptiVg3iWom8aDzhkL/Eih92LXtLaqb07kBlSePNNwZ1W/dK26ADFVbHfB4ltLE/etXi2ob8alQIxaiyBohEPn1dm4lVdhdpms36W6ocSbgZva0ohspTzO8vlhiDfijeIPOjFhSNNnTsF8OX4GhVJYws/eov1J5G/YDMoiR1ppLS0=</CipherValue>\n      </CipherData>\n    </EncryptedData>\n  </appSettings>';
+            self.useExampleConfigSections = function () {
+                self.encrypted(self.exampleConfigSections);
+                return false;
+            };
+            self.useCustomConfigSections = function () {
+                self.encrypted(undefined);
+                $(self.encryptedEl).focus();
+                return false;
+            };
+
+            // decrypt
+            self.decrypted = ko.observable();
+            self.decryptedEl = undefined;
+            self.isDecrypting = ko.observable(false);
+            self.submitText = ko.computed(function () {
+                return self.isDecrypting() ? 'Decrypting...' : 'Decrypt';
+            });
+            self.selectDecrypted = function(vm, e) {
+                $(self.decryptedEl).select();
+                if (e) e.preventDefault();
+                return false;
+            };
+            self.submit = function () {
+                if (!self.isValid()) {
+                    self.errors.showAllMessages();
+                }
+                else {
+                    self.isDecrypting(true);
+                    $.ajax({
+                        url: '/CloudConfigCrypto/Decrypt',
+                        type: 'POST',
+                        data: {
+                            thumbprint: self.thumbprint(),
+                            encrypted: self.encrypted()
+                        }
+                    })
+                    .success(function (response) {
+                        self.decrypted(response);
+                        $('#dialog').dialog({
+                            height: 500,
+                            width: 960
+                        });
+                        self.selectDecrypted();
+                    })
+                    .error(function () {
+                        alert('something went wrong on the server :(');
+                    })
+                    .complete(function () {
+                        self.isDecrypting(false);
+                    });
+                }
+            };
+            
+            // download
+            self.download = function (vm, e) {
+                $(e.target).closest('form').submit();
+                self.selectDecrypted();
+                return false;
+            };
+        };
+
+        var decryptViewModel = new DecryptViewModel();
+        ko.applyBindingsWithValidation(ko.validatedObservable(decryptViewModel), document.body, {
+            insertMessages: false,
+            decorateElement: true,
+            errorElementClass: 'input-validation-error',
+            errorMessageClass: 'field-validation-error'
+        });
+    </script>
+
+}
+
+
+<h2>@ViewBag.Title</h2>
+<form method="POST" data-bind="submit: submit">
+    <br />
+    <label for="thumbprint">Thumbprint</label>
+    <a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> | 
+    <a href="#" data-bind="click: useCustomThumbprint">Enter custom certificate thumbprint</a>
+    <div>
+        <span class="field-validation-error" data-bind="validationMessage: thumbprint"></span>
+    </div>
+    <input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, validationElement: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
+    <br />
+    <br />
+    <label for="encrypted">Encrypted config section(s)</label>
+    <a href="#" data-bind="click: useExampleConfigSections">Use example config sections</a> |
+    <a href="#" data-bind="click: useCustomConfigSections">Enter custom config sections</a>
+    <div>
+        <span class="field-validation-error" data-bind="validationMessage: encrypted"></span>
+    </div>
+    <textarea name="encrypted" id="encrypted" style="width: 960px; min-height: 300px;" data-bind="value: encrypted, validationElement: encrypted, element: 'encryptedEl'"></textarea>
+    <br />
+    <input type="submit" value="Decrypt" data-bind="value: submitText, enable: !isDecrypting()" />
+    <img data-bind="visible: isDecrypting" src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
+</form>
+<div id="dialog" title="Decrypted config section(s)" style="display: none;">
+    <form method="POST" action="@Url.Action("Save", "CloudConfigCrypto")">
+        <a href="" data-bind="click: selectDecrypted">Select the results</a> &amp; hit <kbd>CTRL + C</kbd> to copy, or
+        <a href="@Url.Action("Save", "CloudConfigCrypto")" data-bind="click: download">Save to file</a>.
+        <input name="content" type="hidden" data-bind="value: decrypted" />
+        <input name="context" type="hidden" value="Decrypted" />
+    </form>
+    <textarea data-bind="value:decrypted, element: 'decryptedEl'" style="width: 900px; height: 400px;"></textarea>
+</div>
