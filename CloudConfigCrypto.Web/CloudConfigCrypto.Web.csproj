@@ -150,7 +150,10 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\CloudConfigCryptoController.cs" />
+    <Compile Include="Helpers\ReflectionExtensions.cs" />
+    <Compile Include="Helpers\XmlFormatExtensions.cs" />
     <Compile Include="Models\CertificateExistsAttribute.cs" />
+    <Compile Include="Models\ContentModel.cs" />
     <Compile Include="Models\EncryptionInput.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

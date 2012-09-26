@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Diagnostics;
@@ -63,8 +62,9 @@ namespace CloudConfigCrypto.Web.Controllers
         [HttpPost]
         public JsonResult ValidateThumbprint(EncryptionInput model)
         {
-            if (ModelState.IsValidField("Thumbprint")) return Json(true);
-            var errorMessage = ModelState["Thumbprint"].Errors.First().ErrorMessage;
+            var propertyName = model.PropertyName(x => x.Thumbprint);
+            if (ModelState.IsValidField(propertyName)) return Json(true);
+            var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
             return Json(errorMessage);
         }
 
@@ -72,7 +72,6 @@ namespace CloudConfigCrypto.Web.Controllers
         public ActionResult Encrypt(EncryptionInput model)
         {
             if (!ModelState.IsValid)
-                //return View(model);
                 throw new InvalidOperationException("At least one validation rule is not being enforced by the client.");
 
             // provider node
@@ -113,58 +112,16 @@ namespace CloudConfigCrypto.Web.Controllers
                 node.InnerXml = encryptedNode.OuterXml;
             }
 
-            var encrypted = FormatXml(config.OuterXml, "");
+            var encrypted = config.GetFormattedXml();
 
             return Json(encrypted);
         }
 
         [HttpPost]
-        [ValidateInput(false)]
-        public FileResult Save(string content)
+        public FileResult Save(ContentModel model)
         {
-            var bytes = Encoding.UTF8.GetBytes(content);
-            return File(bytes, "text/plain", "Web.Encrypted.config");
-        }
-
-        private string FormatXml(string outerXml, string lastWhitespace)
-        {
-            var formatted = new StringBuilder();
-            var lastWhitespaceWithoutNewline = lastWhitespace.Replace("\n", "");
-            var fragments = outerXml.Split(new[] { '<' }, StringSplitOptions.RemoveEmptyEntries);
-            var fragmentStack = new Stack<string>();
-            foreach (var fragment in fragments)
-            {
-                if (formatted.ToString().EndsWith(">"))
-                    formatted.Append("\n");
-                var topOfStack = fragmentStack.FirstOrDefault();
-                if (topOfStack != null
-                    && !topOfStack.EndsWith(">")
-                    && fragment.Substring(1, fragment.IndexOf(">", StringComparison.Ordinal))
-                        .StartsWith(topOfStack.Substring(0, topOfStack.IndexOf(">", StringComparison.Ordinal))))
-                {
-                    fragmentStack.Pop();
-                }
-                else if (topOfStack != null
-                    && topOfStack.StartsWith(fragment.Substring(1, fragment.IndexOf(">", StringComparison.Ordinal) - 1)))
-                {
-                    for (var i = 0; i < fragmentStack.Count - 1; i++)
-                        formatted.Append(lastWhitespaceWithoutNewline);
-                    fragmentStack.Pop();
-                }
-                else
-                {
-                    fragmentStack.Push(fragment);
-                    for (var i = 0; i < fragmentStack.Count - 1; i++)
-                        formatted.Append(lastWhitespaceWithoutNewline);
-                }
-                formatted.Append("<");
-                formatted.Append(fragment);
-                if (fragment.EndsWith("/>")) fragmentStack.Pop();
-                if (lastWhitespaceWithoutNewline == "") lastWhitespaceWithoutNewline = "  ";
-            }
-
-            var returnValue = formatted.ToString();
-            return returnValue;
+            var bytes = Encoding.UTF8.GetBytes(model.Content);
+            return File(bytes, "application/octet-stream", "Web.Encrypted.config");
         }
     }
 }

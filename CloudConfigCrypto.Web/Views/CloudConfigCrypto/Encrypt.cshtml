@@ -71,6 +71,11 @@
             self.submitText = ko.computed(function () {
                 return self.isEncrypting() ? 'Encrypting...' : 'Encrypt';
             });
+            self.selectEncrypted = function(vm, e) {
+                $(self.encryptedEl).select();
+                if (e) e.preventDefault();
+                return false;
+            };
             self.submit = function () {
                 if (!self.isValid()) {
                     self.errors.showAllMessages();
@@ -91,7 +96,7 @@
                             height: 500,
                             width: 960
                         });
-                        $(self.encryptedEl).select();
+                        self.selectEncrypted();
                     })
                     .error(function () {
                         alert('something went wrong on the server :(');
@@ -105,7 +110,7 @@
             // download
             self.download = function (vm, e) {
                 $(e.target).closest('form').submit();
-                $(self.encryptedEl).select();
+                self.selectEncrypted();
                 return false;
             };
         };
@@ -146,7 +151,7 @@
 </form>
 <div id="dialog" title="Encrypted config section(s)" style="display: none;">
     <form method="POST" action="@Url.Action("Save", "CloudConfigCrypto")">
-        Hit <kbd>CTRL + C</kbd> to copy, or
+        <a href="" data-bind="click: selectEncrypted">Select the results</a> &amp; hit <kbd>CTRL + C</kbd> to copy, or
         <a href="@Url.Action("Save", "CloudConfigCrypto")" data-bind="click: download">Save to file</a>.
         <input name="content" type="hidden" data-bind="value: encrypted" />
     </form>
