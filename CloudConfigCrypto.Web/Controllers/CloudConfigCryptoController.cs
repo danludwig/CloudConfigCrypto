@@ -67,14 +67,9 @@ namespace CloudConfigCrypto.Web.Controllers
                 return View(model);
 
             // provider node
-            const string configProtectedDataFormat = @"
-    <configProtectedData>
-        <providers>
-            <add name=""CustomProvider"" 
-                thumbprint=""{0}""
-                    type=""Pkcs12ProtectedConfigurationProvider.Pkcs12ProtectedConfigurationProvider, PKCS12ProtectedConfigurationProvider, Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d"" />
-        </providers>
-    </configProtectedData>" + "\n    {1}";
+            const string configProtectedDataFormat = "<configProtectedData><providers><add name=\"CustomProvider\" thumbprint=\"{0}\" " +
+                    "type=\"Pkcs12ProtectedConfigurationProvider.Pkcs12ProtectedConfigurationProvider, PKCS12ProtectedConfigurationProvider, " + 
+                    "Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d\" /></providers></configProtectedData>{1}";
 
             // unencrypted sections
             var unencrypted = model.Unencrypted.Trim().Replace("\r", "").Replace("\t", "    ").Replace("\n", "\n    ") + "\n";
@@ -108,10 +103,12 @@ namespace CloudConfigCrypto.Web.Controllers
                 attribute.Value = "CustomProvider";
                 Debug.Assert(node.Attributes != null);
                 node.Attributes.Append(attribute);
-                node.InnerXml = FormatXml(encrypted.OuterXml, lastWhitespace.OuterXml);
+                //node.InnerXml = FormatXml(encrypted.OuterXml, lastWhitespace.OuterXml);
+                node.InnerXml = encrypted.OuterXml;
             }
 
-            model.Encrypted = config.OuterXml;
+            //model.Encrypted = config.OuterXml;
+            model.Encrypted = FormatXml(config.OuterXml, "");
 
             return View(model);
         }
@@ -124,7 +121,7 @@ namespace CloudConfigCrypto.Web.Controllers
             var fragmentStack = new Stack<string>();
             foreach (var fragment in fragments)
             {
-                if (formatted.Length == 0 || formatted.ToString().EndsWith(">"))
+                if (formatted.ToString().EndsWith(">"))
                     formatted.Append("\n");
                 var topOfStack = fragmentStack.FirstOrDefault();
                 if (topOfStack != null
@@ -137,22 +134,21 @@ namespace CloudConfigCrypto.Web.Controllers
                 else if (topOfStack != null
                     && topOfStack.StartsWith(fragment.Substring(1, fragment.IndexOf(">", StringComparison.Ordinal) - 1)))
                 {
-                    for (var i = 0; i < fragmentStack.Count + 1; i++)
+                    for (var i = 0; i < fragmentStack.Count - 1; i++)
                         formatted.Append(lastWhitespaceWithoutNewline);
                     fragmentStack.Pop();
                 }
                 else
                 {
                     fragmentStack.Push(fragment);
-                    for (var i = 0; i < fragmentStack.Count + 1; i++)
+                    for (var i = 0; i < fragmentStack.Count - 1; i++)
                         formatted.Append(lastWhitespaceWithoutNewline);
                 }
                 formatted.Append("<");
                 formatted.Append(fragment);
                 if (fragment.EndsWith("/>")) fragmentStack.Pop();
+                if (lastWhitespaceWithoutNewline == "") lastWhitespaceWithoutNewline = "  ";
             }
-
-            formatted.Append(lastWhitespace);
 
             var returnValue = formatted.ToString();
             return returnValue;
