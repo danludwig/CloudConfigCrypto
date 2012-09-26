@@ -4,9 +4,9 @@ using System.Web.Mvc;
 
 namespace CloudConfigCrypto.Web.Models
 {
-    public class EncryptConfigSectionsModel
+    public class EncryptionInput
     {
-        public EncryptConfigSectionsModel()
+        public EncryptionInput()
         {
             Thumbprint = "";
             Unencrypted = "";

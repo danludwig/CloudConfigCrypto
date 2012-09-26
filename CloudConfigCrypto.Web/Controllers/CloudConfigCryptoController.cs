@@ -57,11 +57,11 @@ namespace CloudConfigCrypto.Web.Controllers
         [HttpGet]
         public ActionResult EncryptConfigSections()
         {
-            return View(new EncryptConfigSectionsModel());
+            return View();
         }
 
         [HttpPost]
-        public JsonResult ValidateThumbprint(EncryptConfigSectionsModel model)
+        public JsonResult ValidateThumbprint(EncryptionInput model)
         {
             if (ModelState.IsValidField("Thumbprint")) return Json(true);
             var errorMessage = ModelState["Thumbprint"].Errors.First().ErrorMessage;
@@ -69,7 +69,7 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpPost]
-        public ActionResult EncryptConfigSections(EncryptConfigSectionsModel model)
+        public ActionResult EncryptConfigSections(EncryptionInput model)
         {
             if (!ModelState.IsValid)
                 return View(model);
