@@ -265,8 +265,6 @@
     <Content Include="images\orderedList8.png" />
     <Content Include="images\orderedList9.png" />
     <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\CloudConfigCrypto\About.cshtml" />
-    <Content Include="Views\CloudConfigCrypto\Contact.cshtml" />
     <Content Include="Views\CloudConfigCrypto\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
@@ -287,6 +285,7 @@
     <None Include="sample_certificates\sample_config_crypto_cert.pvk" />
     <Content Include="Views\CloudConfigCrypto\ImportCertificatesLocally.cshtml" />
     <Content Include="Views\CloudConfigCrypto\Encrypt.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\Decrypt.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -26,22 +26,6 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpGet]
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your app description page.";
-
-            return View();
-        }
-
-        [HttpGet]
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
-        }
-
-        [HttpGet]
         public ActionResult CreateCertificates()
         {
             return View();
@@ -57,15 +41,6 @@ namespace CloudConfigCrypto.Web.Controllers
         public ActionResult Encrypt()
         {
             return View();
-        }
-
-        [HttpPost]
-        public JsonResult ValidateThumbprint(EncryptionInput model)
-        {
-            var propertyName = model.PropertyName(x => x.Thumbprint);
-            if (ModelState.IsValidField(propertyName)) return Json(true);
-            var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
-            return Json(errorMessage);
         }
 
         [HttpPost]
@@ -113,8 +88,22 @@ namespace CloudConfigCrypto.Web.Controllers
             }
 
             var encrypted = config.GetFormattedXml();
-
             return Json(encrypted);
+        }
+
+        [HttpGet]
+        public ActionResult Decrypt()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public JsonResult ValidateThumbprint(EncryptionInput model)
+        {
+            var propertyName = model.PropertyName(x => x.Thumbprint);
+            if (ModelState.IsValidField(propertyName)) return Json(true);
+            var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
+            return Json(errorMessage);
         }
 
         [HttpPost]
