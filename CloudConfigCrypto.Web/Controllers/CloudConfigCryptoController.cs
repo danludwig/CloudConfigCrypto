@@ -61,17 +61,26 @@ namespace CloudConfigCrypto.Web.Controllers
                 // look for special nested section to encrypt
                 var encryptableNode = FindNestedCryptoNode(node) ?? node;
 
+                // strip off the configProtectionProvider attribute if it exists (do not want to encrypt it)
                 if (encryptableNode.Attributes != null && encryptableNode.Attributes["configProtectionProvider"] != null)
                     encryptableNode.Attributes.Remove(encryptableNode.Attributes["configProtectionProvider"]);
 
+                // encrypt the node
                 var encryptedNode = _provider.Encrypt(encryptableNode);
+
+                // create a new configProtectionProvider attribute
                 var attribute = config.CreateAttribute("configProtectionProvider");
                 attribute.Value = "CustomProvider";
                 Debug.Assert(encryptableNode.Attributes != null);
+
+                // append the attribute to the node that was encrypted (not the encryption result)
                 encryptableNode.Attributes.Append(attribute);
+
+                // nest the encryption result into the node that was encrypted
                 encryptableNode.InnerXml = encryptedNode.OuterXml;
             }
 
+            // format and return the encrypted xml
             var encrypted = config.GetFormattedXml();
             return Json(encrypted);
         }
@@ -115,15 +124,22 @@ namespace CloudConfigCrypto.Web.Controllers
                     // when decryption fails with this thumbprint, display message to the user
                     return Json(new { error = ex.Message.Trim() });
                 }
+
+                // when the decrypted node already has a configProtectionProvider attribute, push it into the builder
                 if (decryptedNode.Attributes != null && decryptedNode.Attributes["configProtectionProvider"] != null)
                 {
+                    // the decrypted node wraps the decrypted xml, so only push its inner xml
                     decryptedSections.Append(decryptedNode.InnerXml.Trim());
                 }
+
+                // otherwise, find the decryption target
                 else
                 {
-                    var wrapperNode = FindNestedCryptoNode(decryptedNode);
-                    Debug.Assert(wrapperNode.ParentNode != null);
-                    wrapperNode.ParentNode.InnerXml = wrapperNode.InnerXml;
+                    var cryptoNode = FindNestedCryptoNode(decryptedNode);
+                    Debug.Assert(cryptoNode.ParentNode != null);
+
+                    // get rid of the crypto node when decrypting
+                    cryptoNode.ParentNode.InnerXml = cryptoNode.InnerXml;
                     decryptedSections.Append(decryptedNode.OuterXml);
                 }
             }
@@ -135,6 +151,7 @@ namespace CloudConfigCrypto.Web.Controllers
                 DocumentElement = { InnerXml = decryptedSections.ToString() },
             };
 
+            // format and return the decrypted xml
             var decrypted = config.GetFormattedXml();
             return Json(decrypted);
         }
