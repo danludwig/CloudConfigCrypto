@@ -9,7 +9,7 @@ This is a little web project that you can use to encrypt and decrypt XML configu
 
 ## Why this project
 
-I built this project mainly because I wanted to be able to decrypt some web.config sections that I encrypted over a year ago. I forgot some of the settings I used for the `mailSettings/smtp/network` section, and these were proving difficult to decrypt using command line tools. I ran a little spike to see if I could decrypt it using brute force, and that spike turned into this project.
+I built this project mainly because I wanted to be able to decrypt some web.config sections that I encrypted over a year ago. I forgot some of the settings I used for the `dataCacheClients` and `system.net/mailSettings/smtp/network` section, and these were proving difficult to decrypt using command line tools. I ran a little spike to see if I could decrypt them by brute force, and that spike turned into this project.
 
 ## How to use it
 
