@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Diagnostics;
@@ -13,6 +14,7 @@ namespace CloudConfigCrypto.Web.Controllers
 {
     public class CloudConfigCryptoController : Controller
     {
+        // the Pkcs12ProtectedConfigurationProvider dependency is injected using its base class.
         private readonly ProtectedConfigurationProvider _provider;
 
         public CloudConfigCryptoController(ProtectedConfigurationProvider provider)
@@ -47,43 +49,20 @@ namespace CloudConfigCrypto.Web.Controllers
         [HttpPost]
         public ActionResult Encrypt(EncryptionInput model)
         {
-            if (!ModelState.IsValid)
-                throw new InvalidOperationException("At least one validation rule is not being enforced by the client.");
+            ThrowWhenModelStateIsInvalid();
 
-            // provider node
-            const string configProtectedDataFormat = "<configProtectedData><providers><add name=\"CustomProvider\" thumbprint=\"{0}\" " +
-                    "type=\"Pkcs12ProtectedConfigurationProvider.Pkcs12ProtectedConfigurationProvider, PKCS12ProtectedConfigurationProvider, " +
-                    "Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d\" /></providers></configProtectedData>{1}";
+            var config = CreateConfigXmlDocument(model.Thumbprint, model.Unencrypted);
 
-            // unencrypted sections
-            var unencrypted = string.Format(configProtectedDataFormat, model.Thumbprint, model.Unencrypted);
-
-            // config document
-            var config = new ConfigXmlDocument
-            {
-                InnerXml = "<configuration></configuration>",
-                DocumentElement = { InnerXml = unencrypted },
-            };
-
-            // initialize provider
-            _provider.Initialize("CustomProvider", new NameValueCollection
-            {
-                { "thumbprint", model.Thumbprint },
-            });
+            InitializeProvider(model.Thumbprint);
 
             // encrypt
-            var configRoot = config.DocumentElement;
-            Debug.Assert(configRoot != null);
-            foreach (var node in configRoot.ChildNodes.Cast<XmlNode>()
-                .Where(n => n.Name != "configProtectedData" && n.Name != "#whitespace"))
+            foreach (var node in GetEligibleCryptoNodes(config))
             {
                 // look for special nested section to encrypt
                 var encryptableNode = FindEncryptableNode(node) ?? node;
 
                 if (encryptableNode.Attributes != null && encryptableNode.Attributes["configProtectionProvider"] != null)
-                {
                     encryptableNode.Attributes.Remove(encryptableNode.Attributes["configProtectionProvider"]);
-                }
 
                 var encryptedNode = _provider.Encrypt(encryptableNode);
                 var attribute = config.CreateAttribute("configProtectionProvider");
@@ -95,6 +74,15 @@ namespace CloudConfigCrypto.Web.Controllers
 
             var encrypted = config.GetFormattedXml();
             return Json(encrypted);
+        }
+
+        [HttpPost]
+        public JsonResult ValidateEncryptionThumbprint(EncryptionInput model)
+        {
+            var propertyName = model.PropertyName(x => x.Thumbprint);
+            if (ModelState.IsValidField(propertyName)) return Json(true);
+            var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
+            return Json(errorMessage);
         }
 
         [NonAction]
@@ -120,44 +108,25 @@ namespace CloudConfigCrypto.Web.Controllers
         [HttpPost]
         public ActionResult Decrypt(DecryptionInput model)
         {
-            if (!ModelState.IsValid)
-                throw new InvalidOperationException("At least one validation rule is not being enforced by the client.");
+            ThrowWhenModelStateIsInvalid();
 
-            // provider node
-            const string configProtectedDataFormat = "<configProtectedData><providers><add name=\"CustomProvider\" thumbprint=\"{0}\" " +
-                    "type=\"Pkcs12ProtectedConfigurationProvider.Pkcs12ProtectedConfigurationProvider, PKCS12ProtectedConfigurationProvider, " +
-                    "Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d\" /></providers></configProtectedData>{1}";
+            var config = CreateConfigXmlDocument(model.Thumbprint, model.Encrypted);
 
-            // encrypted sections
-            var encrypted = string.Format(configProtectedDataFormat, model.Thumbprint, StripXdtAttributes(model.Encrypted));
-
-            // config documents
-            var config = new ConfigXmlDocument
-            {
-                InnerXml = "<configuration></configuration>",
-                DocumentElement = { InnerXml = encrypted },
-            };
-
-            // initialize provider
-            _provider.Initialize("CustomProvider", new NameValueCollection
-            {
-                { "thumbprint", model.Thumbprint },
-            });
+            InitializeProvider(model.Thumbprint);
 
             // decrypt
-            var configRoot = config.DocumentElement;
-            Debug.Assert(configRoot != null);
             var decryptedSections = new StringBuilder();
-            foreach (var node in configRoot.ChildNodes.Cast<XmlNode>()
-                .Where(n => n.Name != "configProtectedData" && n.Name != "#whitespace"))
+            foreach (var node in GetEligibleCryptoNodes(config))
             {
                 XmlNode decryptedNode;
                 try
                 {
+                    // sometimes the content may not be decryptable using the provided thumbprint
                     decryptedNode = _provider.Decrypt(node);
                 }
                 catch (CryptographicException ex)
                 {
+                    // when decryption fails with this thumbprint, display message to the user
                     return Json(new { error = ex.Message.Trim() });
                 }
                 if (decryptedNode.Attributes != null && decryptedNode.Attributes["configProtectionProvider"] != null)
@@ -173,6 +142,7 @@ namespace CloudConfigCrypto.Web.Controllers
                 }
             }
 
+            // create a brand new config document after decryption is complete
             config = new ConfigXmlDocument
             {
                 InnerXml = "<configuration></configuration>",
@@ -183,9 +153,58 @@ namespace CloudConfigCrypto.Web.Controllers
             return Json(decrypted);
         }
 
+        [HttpPost]
+        public JsonResult ValidateDecryptionThumbprint(DecryptionInput model)
+        {
+            var propertyName = model.PropertyName(x => x.Thumbprint);
+            if (ModelState.IsValidField(propertyName)) return Json(true);
+            var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
+            return Json(errorMessage);
+        }
+
+        [HttpPost]
+        public FileResult Save(ContentModel model)
+        {
+            var bytes = Encoding.UTF8.GetBytes(model.Content);
+            return File(bytes, "application/octet-stream", string.Format("Web.{0}.config", model.Context));
+        }
+
+        [NonAction]
+        private void ThrowWhenModelStateIsInvalid()
+        {
+            // all validation should happen at the client. When this exception is thrown,
+            // more work needs to be done to validate everything client-side (ko.validation).
+            if (!ModelState.IsValid)
+                throw new InvalidOperationException("At least one validation rule is not being enforced by the client.");
+        }
+
+        [NonAction]
+        private static ConfigXmlDocument CreateConfigXmlDocument(string thumbprint, string userXml)
+        {
+            // the configProtectedData section is used by .NET to decrypt configuration files.
+            const string configProtectedDataFormat = "<configProtectedData><providers><add name=\"CustomProvider\" thumbprint=\"{0}\" " +
+                    "type=\"Pkcs12ProtectedConfigurationProvider.Pkcs12ProtectedConfigurationProvider, PKCS12ProtectedConfigurationProvider, " +
+                    "Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d\" /></providers></configProtectedData>{1}";
+
+            // automatically remove config transform attributes that may be pasted in with the user XML.
+            var cleanUserXml = StripXdtAttributes(userXml);
+
+            // prepend the cleaned user XML with a formatted configProtectedData node.
+            var configInnerXml = string.Format(configProtectedDataFormat, thumbprint, cleanUserXml);
+
+            // create and return a new configuration xml document
+            var config = new ConfigXmlDocument
+            {
+                InnerXml = "<configuration></configuration>",
+                DocumentElement = { InnerXml = configInnerXml },
+            };
+            return config;
+        }
+
         [NonAction]
         private static string StripXdtAttributes(string xml)
         {
+            // strip out config transform xdt: attributes
             xml = StripXdtAttribute(xml, "Transform");
             xml = StripXdtAttribute(xml, "Locator");
             xml = StripXdtAttribute(xml, "SupressWarnings");
@@ -195,19 +214,51 @@ namespace CloudConfigCrypto.Web.Controllers
         [NonAction]
         private static string StripXdtAttribute(string xml, string attribute)
         {
+            // TODO: would it be more reliable to push the XML into an XmlDocument
+            // and use it to strip out these attributes, rather than doing string surgery?
             var clean = xml;
             var xdt = string.Format(" xdt:{0}=", attribute);
             while (clean.Contains(xdt))
             {
+                // find out where the attribute starts
                 var startIndex = clean.IndexOf(xdt, StringComparison.OrdinalIgnoreCase);
+
+                // delimiter may be either a single or double quote
                 var delimiter = clean.Substring(startIndex + xdt.Length, 1);
-                var length = clean.Substring(startIndex + xdt.Length + delimiter.Length).IndexOf(delimiter, StringComparison.OrdinalIgnoreCase) + 1;
+
+                // the attribute value length is variable, compute it
+                var length = clean.Substring(startIndex + xdt.Length + delimiter.Length)
+                    .IndexOf(delimiter, StringComparison.OrdinalIgnoreCase) + 1;
+
+                // the attribute ends at start index, plus attribute & value lengths, plus final delimiter
                 var endIndex = startIndex + xdt.Length + length + delimiter.Length;
+
+                // use a string builder to amputate the xdt: config transform attribute from the XML
                 var builder = new StringBuilder(clean.Substring(0, startIndex));
                 builder.Append(clean.Substring(endIndex));
                 clean = builder.ToString();
             }
             return clean;
+        }
+
+        [NonAction]
+        private void InitializeProvider(string thumbprint)
+        {
+            // the provider needs to be initialized with the certificate thumbprint
+            _provider.Initialize("CustomProvider", new NameValueCollection
+            {
+                { "thumbprint", thumbprint },
+            });
+        }
+
+        [NonAction]
+        private static IEnumerable<XmlNode> GetEligibleCryptoNodes(ConfigXmlDocument config)
+        {
+            var configRoot = config.DocumentElement;
+            Debug.Assert(configRoot != null);
+            return configRoot.ChildNodes.Cast<XmlNode>()
+                .Where(n => n.Name != "configProtectedData" && n.Name != "#whitespace")
+                .ToArray();
         }
 
         [NonAction]
@@ -222,31 +273,6 @@ namespace CloudConfigCrypto.Web.Controllers
                 if (wrapperNode != null) return wrapperNode;
             }
             return null;
-        }
-
-        [HttpPost]
-        public JsonResult ValidateThumbprint(EncryptionInput model)
-        {
-            var propertyName = model.PropertyName(x => x.Thumbprint);
-            if (ModelState.IsValidField(propertyName)) return Json(true);
-            var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
-            return Json(errorMessage);
-        }
-
-        [HttpPost]
-        public JsonResult ValidatePrivateThumbprint(DecryptionInput model)
-        {
-            var propertyName = model.PropertyName(x => x.Thumbprint);
-            if (ModelState.IsValidField(propertyName)) return Json(true);
-            var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
-            return Json(errorMessage);
-        }
-
-        [HttpPost]
-        public FileResult Save(ContentModel model)
-        {
-            var bytes = Encoding.UTF8.GetBytes(model.Content);
-            return File(bytes, "application/octet-stream", string.Format("Web.{0}.config", model.Context));
         }
     }
 }

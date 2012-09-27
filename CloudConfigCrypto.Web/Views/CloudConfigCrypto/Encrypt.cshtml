@@ -19,7 +19,7 @@
                         var isValid = false,
                             validation = this;
                         $.ajax({
-                            url: '/CloudConfigCrypto/ValidateThumbprint',
+                            url: '/CloudConfigCrypto/ValidateEncryptionThumbprint',
                             type: 'POST',
                             data: { thumbprint: val },
                             async: false
