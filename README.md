@@ -1,6 +1,6 @@
 # Cloud Configuration Cryptography (CloudConfigCrypto)
 
-This is a little web project that you can use to encrypt and decrypt XML configuration files (web.config or app.config) based on the PKCS12ProtectedConfigurationProvider. You can read an [overview of this handy little tool here][http://archive.msdn.microsoft.com/pkcs12protectedconfg]. There is also a [nuget package available for it here][http://nuget.org/packages/Pkcs12ProtectedConfigurationProvider]. It looks like Microsoft took away the articles originally authored by Wayne Walter Berry, which is too bad - they were great articles.
+This is a little web project that you can use to encrypt and decrypt XML configuration files (web.config or app.config) based on the PKCS12ProtectedConfigurationProvider. You can read an [overview of this handy little tool here](http://archive.msdn.microsoft.com/pkcs12protectedconfg). There is also a [nuget package available for it here](http://nuget.org/packages/Pkcs12ProtectedConfigurationProvider). It looks like Microsoft took away the articles originally authored by Wayne Walter Berry, which is too bad - they were great articles.
 
 ## Why this project
 
