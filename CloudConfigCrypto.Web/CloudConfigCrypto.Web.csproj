@@ -225,6 +225,7 @@
     <Content Include="images\8867.clip_image005_2.jpg" />
     <Content Include="images\spinner.gif" />
     <Content Include="Models\CryptoViewModel.js" />
+    <Content Include="Models\DecryptViewModel.js" />
     <Content Include="sample_certificates\sample_config_crypto_readme.txt" />
     <Content Include="scripts\app\knockout.binding-handlers.js" />
     <Content Include="scripts\jquery-1.8.2-vsdoc.js" />
@@ -289,6 +290,7 @@
     <Content Include="Views\CloudConfigCrypto\CreateCertificates.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Models\EncryptViewModel.js" />
     <None Include="sample_certificates\sample_config_crypto_cert.cer" />
     <None Include="sample_certificates\sample_config_crypto_cert.pfx" />
     <None Include="sample_certificates\sample_config_crypto_cert.pvk" />

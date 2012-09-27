@@ -88,6 +88,7 @@ namespace CloudConfigCrypto.Web.Controllers
         [HttpPost]
         public virtual JsonResult ValidateEncryptionThumbprint(EncryptRequestModel model)
         {
+            //System.Threading.Thread.Sleep(5000);
             var propertyName = model.PropertyName(x => x.Thumbprint);
             if (ModelState.IsValidField(propertyName)) return Json(true);
             var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
@@ -159,6 +160,7 @@ namespace CloudConfigCrypto.Web.Controllers
         [HttpPost]
         public virtual JsonResult ValidateDecryptionThumbprint(DecryptRequestModel model)
         {
+            //System.Threading.Thread.Sleep(5000);
             var propertyName = model.PropertyName(x => x.Thumbprint);
             if (ModelState.IsValidField(propertyName)) return Json(true);
             var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;

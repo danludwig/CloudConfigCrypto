@@ -4,89 +4,15 @@
 
 @section scripts
 {
+
     <script type="text/javascript" src="~/Models/CryptoViewModel.js"></script>
+
+    <script type="text/javascript" src="~/Models/EncryptViewModel.js"></script>
+
     <script type="text/javascript">
-        function EncryptViewModel() {
-            var self = this;
-            CryptoViewModel.call(self);
-
-            // thumbprint
-            self.thumbprintRemoteValidationUrl = MvcJs.CloudConfigCrypto.ValidateEncryptionThumbprint();
-
-            // XML input
-            self.xmlInput = ko.observable().extend({
-                required: {
-                    message: 'Unencrypted config section(s) is required.'
-                }
-            });
-            self.xmlInputEl = undefined;
-            self.exampleConfigSections = '<connectionStrings>\n  <add name="MyDatabase" connectionString="Server=tcp:mydbserver.database.windows.net,1433;Database=MyDatabaseName;User ID=MyDatabaseUser@mydbserver;Password=its a secret;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true;" providerName="System.Data.SqlClient" />\n</connectionStrings>\n<appSettings>\n  <add key=\"RecaptchaPrivateKey\" value=\"8UxmrfPQHHHHHVsEPrVwEgOJCIwQpdVWZAlw9plm\" />\n  <add key=\"GeoPlanetAppId\" value=\"XjFhslJ7dKLdfKFdK_lksdfkL9sdL9fdKfdjad-\" />\n</appSettings>\n<system.net>\n  <mailSettings>\n    <smtp configProtectionProvider="CustomProvider">\n      <network host="smtp.gmail.com" password="its a secret" port="587" userName="google.apps.user@mydomain.tld" enableSsl="true" />\n    </smtp>\n  </mailSettings>\n</system.net>';
-            self.useExampleConfigSections = function () {
-                self.xmlInput(self.exampleConfigSections);
-                return false;
-            };
-            self.useCustomConfigSections = function () {
-                self.xmlInput(undefined);
-                $(self.xmlInputEl).focus();
-                return false;
-            };
-
-            // encrypt
-            self.encrypted = ko.observable();
-            self.encryptedEl = undefined;
-            self.isEncrypting = ko.observable(false);
-            self.submitText = ko.computed(function () {
-                return self.isEncrypting() ? 'Encrypting...' : 'Encrypt';
-            });
-            self.selectEncrypted = function(vm, e) {
-                $(self.encryptedEl).select();
-                if (e) e.preventDefault();
-                return false;
-            };
-            self.submit = function () {
-                if (!self.isValid()) {
-                    self.errors.showAllMessages();
-                }
-                else {
-                    self.isEncrypting(true);
-                    $.ajax({
-                        url: '/CloudConfigCrypto/Encrypt',
-                        type: 'POST',
-                        data: {
-                            thumbprint: self.thumbprint(),
-                            xmlInput: self.xmlInput()
-                        }
-                    })
-                    .success(function (response) {
-                        self.encrypted(response);
-                        $('#dialog').dialog({
-                            height: 500,
-                            width: 960
-                        });
-                    })
-                    .error(function () {
-                        alert('something went wrong on the server :(');
-                    })
-                    .complete(function () {
-                        self.isEncrypting(false);
-                    });
-                }
-            };
-            
-            // download
-            self.download = function (vm, e) {
-                $(e.target).closest('form').submit();
-                return false;
-            };
-        };
-
-        var encryptViewModel = new EncryptViewModel();
-        ko.applyBindingsWithValidation(ko.validatedObservable(encryptViewModel), document.body, {
-            insertMessages: false,
-            decorateElement: true,
-            errorElementClass: 'input-validation-error',
-            errorMessageClass: 'field-validation-error'
-        });
+        var encryptViewModel = ko.validatedObservable(new EncryptViewModel());
+        var validationOptions = new CryptoViewModelValidationOptions();
+        ko.applyBindingsWithValidation(encryptViewModel, document.body, validationOptions);
     </script>
 
 }
@@ -96,30 +22,34 @@
     <br />
     <label for="thumbprint">Thumbprint</label>
     <a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> | 
-    <a href="#" data-bind="click: useCustomThumbprint">Enter custom certificate thumbprint</a>
+    <a href="#" data-bind="click: clearSampleThumbprint">Enter custom certificate thumbprint</a>
     <div>
         <span class="field-validation-error" data-bind="validationMessage: thumbprint"></span>
     </div>
     <input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, validationElement: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
+    <span data-bind="visible: isValidatingThumbprint" style="display: none;">
+        <img src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
+        <em>Validating certificate thumbprint...</em>
+    </span>
     <br />
     <br />
     <label for="xmlInput">Unencrypted config section(s)</label>
-    <a href="#" data-bind="click: useExampleConfigSections">Use example config sections</a> |
-    <a href="#" data-bind="click: useCustomConfigSections">Enter custom config sections</a>
+    <a href="#" data-bind="click: useExampleXmlInput">Use example config sections</a> |
+    <a href="#" data-bind="click: clearXmlInput">Enter custom config sections</a>
     <div>
         <span class="field-validation-error" data-bind="validationMessage: xmlInput"></span>
     </div>
     <textarea name="xmlInput" id="xmlInput" style="width: 960px; min-height: 400px;" data-bind="value: xmlInput, validationElement: xmlInput, element: 'xmlInputEl'"></textarea>
     <br />
-    <input type="submit" value="Encrypt" data-bind="value: submitText, enable: !isEncrypting()" />
-    <img data-bind="visible: isEncrypting" src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
+    <input type="submit" value="Encrypt" data-bind="value: submitButtonText, enable: !isProcessingCrypto()" />
+    <img data-bind="visible: isProcessingCrypto" src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
 </form>
 <div id="dialog" title="Encrypted config section(s)" style="display: none;">
     <form method="POST" action="@Url.Action("Save", "CloudConfigCrypto")">
-        <a href="" data-bind="click: selectEncrypted">Select the results</a> &amp; hit <kbd>CTRL + C</kbd> to copy, or
+        <a href="" data-bind="click: selectXmlOutput">Select the results</a> &amp; hit <kbd>CTRL + C</kbd> to copy, or
         <a href="@Url.Action("Save", "CloudConfigCrypto")" data-bind="click: download">Save to file</a>.
-        <input name="content" type="hidden" data-bind="value: encrypted" />
+        <input name="content" type="hidden" data-bind="value: xmlOutput" />
         <input name="context" type="hidden" value="Encrypted" />
     </form>
-    <textarea data-bind="value: encrypted, element: 'encryptedEl'" style="width: 900px; height: 400px;"></textarea>
+    <textarea data-bind="value: xmlOutput, element: 'xmlOutputEl'" style="width: 900px; height: 400px;"></textarea>
 </div>
