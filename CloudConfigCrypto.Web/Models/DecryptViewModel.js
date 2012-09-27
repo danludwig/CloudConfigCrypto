@@ -20,10 +20,7 @@
         }
         else {
             self.xmlOutput(response);
-            $('#dialog').dialog({
-                height: 500,
-                width: 960
-            });
+            self.showXmlOutput();
         }
     };
 };

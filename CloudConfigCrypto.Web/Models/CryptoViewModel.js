@@ -76,6 +76,20 @@
     self.cryptoSuccess = function (response) {
         alert('Override cryptoSuccess function in viewmodel');
     };
+    self.showXmlOutput = function(xmlOutput) {
+        $('#dialog').dialog({
+            height: 500,
+            width: 960,
+            show: {
+                effect: 'slide',
+                direction: 'down'
+            },
+            hide: {
+                effect: 'slide',
+                direction: 'down'
+            }
+        });
+    };
     self.submit = function () {
         if (!self.isValid()) {
             self.errors.showAllMessages();
