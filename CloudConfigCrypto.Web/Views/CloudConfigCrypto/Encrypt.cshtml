@@ -53,7 +53,7 @@
                 }
             });
             self.unencryptedEl = undefined;
-            self.exampleConfigSections = '<connectionStrings>\n  <add name="DefaultConnection" connectionString="Data Source=.\\SQLEXPRESS;Initial Catalog=aspnet-CloudConfigCrypto.Web-20120922133933;Integrated Security=SSPI" providerName="System.Data.SqlClient" />\n</connectionStrings>\n<appSettings>\n  <add key=\"RecaptchaPrivateKey\" value=\"8UxmrfPQHHHHHVsEPrVwEgOJCIwQpdVWZAlw9plm\" />\n  <add key=\"GeoPlanetAppId\" value=\"XjFhslJ7dKLdfKFdK_lksdfkL9sdL9fdKfdjad-\" />\n</appSettings>';
+            self.exampleConfigSections = '<connectionStrings>\n  <add name="MyDatabase" connectionString="Server=tcp:mydbserver.database.windows.net,1433;Database=MyDatabaseName;User ID=MyDatabaseUser@mydbserver;Password=its a secret;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true;" providerName="System.Data.SqlClient" />\n</connectionStrings>\n<appSettings>\n  <add key=\"RecaptchaPrivateKey\" value=\"8UxmrfPQHHHHHVsEPrVwEgOJCIwQpdVWZAlw9plm\" />\n  <add key=\"GeoPlanetAppId\" value=\"XjFhslJ7dKLdfKFdK_lksdfkL9sdL9fdKfdjad-\" />\n</appSettings>\n<system.net>\n  <mailSettings>\n    <smtp configProtectionProvider="CustomProvider">\n      <network host="smtp.gmail.com" password="its a secret" port="587" userName="google.apps.user@mydomain.tld" enableSsl="true" />\n    </smtp>\n  </mailSettings>\n</system.net>';
             self.useExampleConfigSections = function () {
                 self.unencrypted(self.exampleConfigSections);
                 return false;
@@ -96,7 +96,6 @@
                             height: 500,
                             width: 960
                         });
-                        self.selectEncrypted();
                     })
                     .error(function () {
                         alert('something went wrong on the server :(');
@@ -110,7 +109,6 @@
             // download
             self.download = function (vm, e) {
                 $(e.target).closest('form').submit();
-                self.selectEncrypted();
                 return false;
             };
         };
@@ -144,7 +142,7 @@
     <div>
         <span class="field-validation-error" data-bind="validationMessage: unencrypted"></span>
     </div>
-    <textarea name="unencrypted" id="unencrypted" style="width: 960px; min-height: 300px;" data-bind="value: unencrypted, validationElement: unencrypted, element: 'unencryptedEl'"></textarea>
+    <textarea name="unencrypted" id="unencrypted" style="width: 960px; min-height: 400px;" data-bind="value: unencrypted, validationElement: unencrypted, element: 'unencryptedEl'"></textarea>
     <br />
     <input type="submit" value="Encrypt" data-bind="value: submitText, enable: !isEncrypting()" />
     <img data-bind="visible: isEncrypting" src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />

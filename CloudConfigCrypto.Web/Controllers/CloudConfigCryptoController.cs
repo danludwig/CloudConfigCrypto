@@ -74,21 +74,41 @@ namespace CloudConfigCrypto.Web.Controllers
             // encrypt
             var configRoot = config.DocumentElement;
             Debug.Assert(configRoot != null);
-            foreach (XmlNode node in configRoot.ChildNodes)
+            foreach (var node in configRoot.ChildNodes.Cast<XmlNode>()
+                .Where(n => n.Name != "configProtectedData" && n.Name != "#whitespace"))
             {
-                // skip non-encryptable nodes
-                if (node.Name == "configProtectedData" || node.Name == "#whitespace") continue;
+                // look for special nested section to encrypt
+                var encryptableNode = FindEncryptableNode(node) ?? node;
 
-                var encryptedNode = _provider.Encrypt(node);
+                if (encryptableNode.Attributes != null && encryptableNode.Attributes["configProtectionProvider"] != null)
+                {
+                    encryptableNode.Attributes.Remove(encryptableNode.Attributes["configProtectionProvider"]);
+                }
+
+                var encryptedNode = _provider.Encrypt(encryptableNode);
                 var attribute = config.CreateAttribute("configProtectionProvider");
                 attribute.Value = "CustomProvider";
-                Debug.Assert(node.Attributes != null);
-                node.Attributes.Append(attribute);
-                node.InnerXml = encryptedNode.OuterXml;
+                Debug.Assert(encryptableNode.Attributes != null);
+                encryptableNode.Attributes.Append(attribute);
+                encryptableNode.InnerXml = encryptedNode.OuterXml;
             }
 
             var encrypted = config.GetFormattedXml();
             return Json(encrypted);
+        }
+
+        [NonAction]
+        private static XmlNode FindEncryptableNode(XmlNode node)
+        {
+            var wrapperNode = node.SelectSingleNode("* [@configProtectionProvider='CustomProvider']");
+            if (wrapperNode != null) return wrapperNode;
+            foreach (XmlNode childNode in node.ChildNodes)
+            {
+                if (node.Name == "#whitespace") continue;
+                wrapperNode = FindEncryptableNode(childNode);
+                if (wrapperNode != null) return wrapperNode;
+            }
+            return null;
         }
 
         [HttpGet]
@@ -128,11 +148,9 @@ namespace CloudConfigCrypto.Web.Controllers
             var configRoot = config.DocumentElement;
             Debug.Assert(configRoot != null);
             var decryptedSections = new StringBuilder();
-            foreach (XmlNode node in configRoot.ChildNodes)
+            foreach (var node in configRoot.ChildNodes.Cast<XmlNode>()
+                .Where(n => n.Name != "configProtectedData" && n.Name != "#whitespace"))
             {
-                // skip non-encryptable nodes
-                if (node.Name == "configProtectedData" || node.Name == "#whitespace") continue;
-
                 XmlNode decryptedNode;
                 try
                 {
@@ -199,6 +217,7 @@ namespace CloudConfigCrypto.Web.Controllers
             if (wrapperNode != null) return wrapperNode;
             foreach (XmlNode childNode in node.ChildNodes)
             {
+                if (node.Name == "#whitespace") continue;
                 wrapperNode = FindWrapperNode(childNode);
                 if (wrapperNode != null) return wrapperNode;
             }
