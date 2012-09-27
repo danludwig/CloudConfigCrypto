@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace CloudConfigCrypto.Web.Models
 {
@@ -9,7 +11,16 @@ namespace CloudConfigCrypto.Web.Models
         {
             if (!base.IsValid(value)) return true;
             var certificate = GetCertificate(value);
-            return certificate.HasPrivateKey;
+            if (!certificate.HasPrivateKey) return false;
+            try
+            {
+                var test = certificate.PrivateKey;
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

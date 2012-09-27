@@ -107,7 +107,19 @@
         <br />
         Enter the password that was used to create the certificate.
         <br />
-        If you want to be able to export the PFX file at a later time, check the box to make it exportable.
+        Check the box to make it exportable, and finish importing the certificate.
+        <br />
+        <br />
+        <strong style="color: #c00;">Important:</strong> After importing a certificate and rebooting, you may see errors that your certificate no longer has a private key when trying to decrypt.
+        <br />
+        To avoid this you can right-click on the certificate then choose <code>All Tasks &gt; Manage Private Keys</code>.
+        <br />
+        Use the <code>Add</code> button to grant access to your user account (the account IIS Express runs under). Private keys should then be accessible after a reboot, 
+        as long as you are signed in under this account.
+        <br />
+        If all else fails, you can always remove and re-add the certificate (as long as you remember the password!)
+        <br />
+        If anyone else knows a better solution for this, please fork to update this project.
         <br />
         <br />
         <strong>Note:</strong> If you skipped the <a href="@Url.Action("CreateCertificates", "CloudConfigCrypto")">create certificates step</a>, you can import the .PFX file 
