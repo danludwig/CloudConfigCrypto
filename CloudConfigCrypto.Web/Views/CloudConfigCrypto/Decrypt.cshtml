@@ -91,12 +91,18 @@
                         }
                     })
                     .success(function (response) {
-                        self.decrypted(response);
-                        $('#dialog').dialog({
-                            height: 500,
-                            width: 960
-                        });
-                        self.selectDecrypted();
+                        if (response.error) {
+                            alert('The config section(s) could not be decrypted.\nReason: ' + response.error +
+                                '\n\nAre you sure this is the thumbprint of the certificate used for encryption?');
+                        }
+                        else {
+                            self.decrypted(response);
+                            $('#dialog').dialog({
+                                height: 500,
+                                width: 960
+                            });
+                            self.selectDecrypted();
+                        }
                     })
                     .error(function () {
                         alert('something went wrong on the server :(');

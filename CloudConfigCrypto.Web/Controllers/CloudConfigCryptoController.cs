@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Web.Mvc;
 using System.Xml;
@@ -55,8 +56,7 @@ namespace CloudConfigCrypto.Web.Controllers
                     "Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d\" /></providers></configProtectedData>{1}";
 
             // unencrypted sections
-            var unencrypted = model.Unencrypted.Trim().Replace("\r", "").Replace("\t", "    ").Replace("\n", "\n    ") + "\n";
-            unencrypted = string.Format(configProtectedDataFormat, model.Thumbprint, unencrypted);
+            var unencrypted = string.Format(configProtectedDataFormat, model.Thumbprint, model.Unencrypted);
 
             // config document
             var config = new ConfigXmlDocument
@@ -109,8 +109,7 @@ namespace CloudConfigCrypto.Web.Controllers
                     "Version=1.0.0.0, Culture=neutral, PublicKeyToken=34da007ac91f901d\" /></providers></configProtectedData>{1}";
 
             // encrypted sections
-            var encrypted = model.Encrypted; //.Trim().Replace("\r", "").Replace("\t", "    ").Replace("\n", "\n    ") + "\n";
-            encrypted = string.Format(configProtectedDataFormat, model.Thumbprint, encrypted);
+            var encrypted = string.Format(configProtectedDataFormat, model.Thumbprint, StripXdtAttributes(model.Encrypted));
 
             // config documents
             var config = new ConfigXmlDocument
@@ -134,7 +133,15 @@ namespace CloudConfigCrypto.Web.Controllers
                 // skip non-encryptable nodes
                 if (node.Name == "configProtectedData" || node.Name == "#whitespace") continue;
 
-                var decryptedNode = _provider.Decrypt(node);
+                XmlNode decryptedNode;
+                try
+                {
+                    decryptedNode = _provider.Decrypt(node);
+                }
+                catch (CryptographicException ex)
+                {
+                    return Json(new { error = ex.Message.Trim() });
+                }
                 if (decryptedNode.Attributes != null && decryptedNode.Attributes["configProtectionProvider"] != null)
                 {
                     decryptedSections.Append(decryptedNode.InnerXml.Trim());
@@ -156,6 +163,33 @@ namespace CloudConfigCrypto.Web.Controllers
 
             var decrypted = config.GetFormattedXml();
             return Json(decrypted);
+        }
+
+        [NonAction]
+        private static string StripXdtAttributes(string xml)
+        {
+            xml = StripXdtAttribute(xml, "Transform");
+            xml = StripXdtAttribute(xml, "Locator");
+            xml = StripXdtAttribute(xml, "SupressWarnings");
+            return xml;
+        }
+
+        [NonAction]
+        private static string StripXdtAttribute(string xml, string attribute)
+        {
+            var clean = xml;
+            var xdt = string.Format(" xdt:{0}=", attribute);
+            while (clean.Contains(xdt))
+            {
+                var startIndex = clean.IndexOf(xdt, StringComparison.OrdinalIgnoreCase);
+                var delimiter = clean.Substring(startIndex + xdt.Length, 1);
+                var length = clean.Substring(startIndex + xdt.Length + delimiter.Length).IndexOf(delimiter, StringComparison.OrdinalIgnoreCase) + 1;
+                var endIndex = startIndex + xdt.Length + length + delimiter.Length;
+                var builder = new StringBuilder(clean.Substring(0, startIndex));
+                builder.Append(clean.Substring(endIndex));
+                clean = builder.ToString();
+            }
+            return clean;
         }
 
         [NonAction]
