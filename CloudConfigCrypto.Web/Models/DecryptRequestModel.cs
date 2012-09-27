@@ -4,12 +4,12 @@ using System.Web.Mvc;
 
 namespace CloudConfigCrypto.Web.Models
 {
-    public class DecryptionInput
+    public class DecryptRequestModel
     {
-        public DecryptionInput()
+        public DecryptRequestModel()
         {
             Thumbprint = "";
-            Encrypted = "";
+            XmlInput = "";
         }
 
         [DisplayFormat(ConvertEmptyStringToNull = false)]
@@ -23,6 +23,6 @@ namespace CloudConfigCrypto.Web.Models
         [AllowHtml]
         [DisplayFormat(ConvertEmptyStringToNull = false)]
         [Required(ErrorMessage = "Encrypted config section(s) is required.")]
-        public string Encrypted { get; set; }
+        public string XmlInput { get; set; }
     }
 }

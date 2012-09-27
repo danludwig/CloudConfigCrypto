@@ -4,12 +4,12 @@ using System.Web.Mvc;
 
 namespace CloudConfigCrypto.Web.Models
 {
-    public class EncryptionInput
+    public class EncryptRequestModel
     {
-        public EncryptionInput()
+        public EncryptRequestModel()
         {
             Thumbprint = "";
-            Unencrypted = "";
+            XmlInput = "";
         }
 
         [DisplayFormat(ConvertEmptyStringToNull = false)]
@@ -21,6 +21,6 @@ namespace CloudConfigCrypto.Web.Models
         [AllowHtml]
         [DisplayFormat(ConvertEmptyStringToNull = false)]
         [Required(ErrorMessage = "Unencrypted config section(s) is required.")]
-        public string Unencrypted { get; set; }
+        public string XmlInput { get; set; }
     }
 }

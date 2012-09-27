@@ -4,63 +4,30 @@
 
 @section scripts
 {
-
+    <script type="text/javascript" src="~/Models/CryptoViewModel.js"></script>
     <script type="text/javascript">
         function EncryptViewModel() {
             var self = this;
+            CryptoViewModel.call(self);
 
             // thumbprint
-            self.thumbprint = ko.observable().extend({
-                required: {
-                    message: 'Thumbprint is required.'
-                },
-                validation: {
-                    validator: function (val) {
-                        var isValid = false,
-                            validation = this;
-                        $.ajax({
-                            url: '/CloudConfigCrypto/ValidateEncryptionThumbprint',
-                            type: 'POST',
-                            data: { thumbprint: val },
-                            async: false
-                        })
-                        .success(function (response) {
-                            if (response === true) isValid = true;
-                            else validation.message = response;
-                        });
-                        return isValid;
-                    },
-                    message: 'Your local computer certificate store does not contain a certificate with this thumbprint.',
-                    params: self
-                }
-            });
-            self.thumbprintEl = undefined;
-            self.sampleThumbprint = '630e33c5ead42a5564e22d920a0c5ac4b10cf052'.toUpperCase();
-            self.useSampleThumbprint = function () {
-                self.thumbprint(self.sampleThumbprint);
-                return false;
-            };
-            self.useCustomThumbprint = function () {
-                self.thumbprint(undefined);
-                $(self.thumbprintEl).focus();
-                return false;
-            };
+            self.thumbprintRemoteValidationUrl = MvcJs.CloudConfigCrypto.ValidateEncryptionThumbprint();
 
-            // unencrypted
-            self.unencrypted = ko.observable().extend({
+            // XML input
+            self.xmlInput = ko.observable().extend({
                 required: {
                     message: 'Unencrypted config section(s) is required.'
                 }
             });
-            self.unencryptedEl = undefined;
+            self.xmlInputEl = undefined;
             self.exampleConfigSections = '<connectionStrings>\n  <add name="MyDatabase" connectionString="Server=tcp:mydbserver.database.windows.net,1433;Database=MyDatabaseName;User ID=MyDatabaseUser@mydbserver;Password=its a secret;Trusted_Connection=False;Encrypt=True;MultipleActiveResultSets=true;" providerName="System.Data.SqlClient" />\n</connectionStrings>\n<appSettings>\n  <add key=\"RecaptchaPrivateKey\" value=\"8UxmrfPQHHHHHVsEPrVwEgOJCIwQpdVWZAlw9plm\" />\n  <add key=\"GeoPlanetAppId\" value=\"XjFhslJ7dKLdfKFdK_lksdfkL9sdL9fdKfdjad-\" />\n</appSettings>\n<system.net>\n  <mailSettings>\n    <smtp configProtectionProvider="CustomProvider">\n      <network host="smtp.gmail.com" password="its a secret" port="587" userName="google.apps.user@mydomain.tld" enableSsl="true" />\n    </smtp>\n  </mailSettings>\n</system.net>';
             self.useExampleConfigSections = function () {
-                self.unencrypted(self.exampleConfigSections);
+                self.xmlInput(self.exampleConfigSections);
                 return false;
             };
             self.useCustomConfigSections = function () {
-                self.unencrypted(undefined);
-                $(self.unencryptedEl).focus();
+                self.xmlInput(undefined);
+                $(self.xmlInputEl).focus();
                 return false;
             };
 
@@ -87,7 +54,7 @@
                         type: 'POST',
                         data: {
                             thumbprint: self.thumbprint(),
-                            unencrypted: self.unencrypted()
+                            xmlInput: self.xmlInput()
                         }
                     })
                     .success(function (response) {
@@ -136,13 +103,13 @@
     <input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, validationElement: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
     <br />
     <br />
-    <label for="unencrypted">Unencrypted config section(s)</label>
+    <label for="xmlInput">Unencrypted config section(s)</label>
     <a href="#" data-bind="click: useExampleConfigSections">Use example config sections</a> |
     <a href="#" data-bind="click: useCustomConfigSections">Enter custom config sections</a>
     <div>
-        <span class="field-validation-error" data-bind="validationMessage: unencrypted"></span>
+        <span class="field-validation-error" data-bind="validationMessage: xmlInput"></span>
     </div>
-    <textarea name="unencrypted" id="unencrypted" style="width: 960px; min-height: 400px;" data-bind="value: unencrypted, validationElement: unencrypted, element: 'unencryptedEl'"></textarea>
+    <textarea name="xmlInput" id="xmlInput" style="width: 960px; min-height: 400px;" data-bind="value: xmlInput, validationElement: xmlInput, element: 'xmlInputEl'"></textarea>
     <br />
     <input type="submit" value="Encrypt" data-bind="value: submitText, enable: !isEncrypting()" />
     <img data-bind="visible: isEncrypting" src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />

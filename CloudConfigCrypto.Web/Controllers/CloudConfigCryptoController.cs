@@ -12,7 +12,7 @@ using CloudConfigCrypto.Web.Models;
 
 namespace CloudConfigCrypto.Web.Controllers
 {
-    public class CloudConfigCryptoController : Controller
+    public partial class CloudConfigCryptoController : Controller
     {
         // the Pkcs12ProtectedConfigurationProvider dependency is injected using its base class.
         private readonly ProtectedConfigurationProvider _provider;
@@ -23,35 +23,35 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpGet]
-        public ViewResult Index()
+        public virtual ViewResult Index()
         {
             return View();
         }
 
         [HttpGet]
-        public ViewResult CreateCertificates()
+        public virtual ViewResult CreateCertificates()
         {
             return View();
         }
 
         [HttpGet]
-        public ViewResult ImportCertificatesLocally()
+        public virtual ViewResult ImportCertificatesLocally()
         {
             return View();
         }
 
         [HttpGet]
-        public ViewResult Encrypt()
+        public virtual ViewResult Encrypt()
         {
             return View();
         }
 
         [HttpPost]
-        public JsonResult Encrypt(EncryptionInput model)
+        public virtual JsonResult Encrypt(EncryptRequestModel model)
         {
             ThrowWhenModelStateIsInvalid();
 
-            var config = CreateConfigXmlDocument(model.Thumbprint, model.Unencrypted);
+            var config = CreateConfigXmlDocument(model.Thumbprint, model.XmlInput);
 
             InitializeProvider(model.Thumbprint);
 
@@ -86,7 +86,7 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpPost]
-        public JsonResult ValidateEncryptionThumbprint(EncryptionInput model)
+        public virtual JsonResult ValidateEncryptionThumbprint(EncryptRequestModel model)
         {
             var propertyName = model.PropertyName(x => x.Thumbprint);
             if (ModelState.IsValidField(propertyName)) return Json(true);
@@ -95,17 +95,17 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpGet]
-        public ViewResult Decrypt()
+        public virtual ViewResult Decrypt()
         {
             return View();
         }
 
         [HttpPost]
-        public JsonResult Decrypt(DecryptionInput model)
+        public virtual JsonResult Decrypt(DecryptRequestModel model)
         {
             ThrowWhenModelStateIsInvalid();
 
-            var config = CreateConfigXmlDocument(model.Thumbprint, model.Encrypted);
+            var config = CreateConfigXmlDocument(model.Thumbprint, model.XmlInput);
 
             InitializeProvider(model.Thumbprint);
 
@@ -157,7 +157,7 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpPost]
-        public JsonResult ValidateDecryptionThumbprint(DecryptionInput model)
+        public virtual JsonResult ValidateDecryptionThumbprint(DecryptRequestModel model)
         {
             var propertyName = model.PropertyName(x => x.Thumbprint);
             if (ModelState.IsValidField(propertyName)) return Json(true);
@@ -166,7 +166,7 @@ namespace CloudConfigCrypto.Web.Controllers
         }
 
         [HttpPost]
-        public FileResult Save(ContentModel model)
+        public virtual FileResult Save(ContentModel model)
         {
             // download the cryption content to a file
             var bytes = Encoding.UTF8.GetBytes(model.Content);
