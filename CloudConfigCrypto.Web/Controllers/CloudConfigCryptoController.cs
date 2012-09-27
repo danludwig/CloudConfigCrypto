@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Web.Mvc;
 using System.Xml;
@@ -174,6 +173,15 @@ namespace CloudConfigCrypto.Web.Controllers
 
         [HttpPost]
         public JsonResult ValidateThumbprint(EncryptionInput model)
+        {
+            var propertyName = model.PropertyName(x => x.Thumbprint);
+            if (ModelState.IsValidField(propertyName)) return Json(true);
+            var errorMessage = ModelState[propertyName].Errors.First().ErrorMessage;
+            return Json(errorMessage);
+        }
+
+        [HttpPost]
+        public JsonResult ValidatePrivateThumbprint(DecryptionInput model)
         {
             var propertyName = model.PropertyName(x => x.Thumbprint);
             if (ModelState.IsValidField(propertyName)) return Json(true);

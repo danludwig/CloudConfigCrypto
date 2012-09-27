@@ -154,6 +154,7 @@
     <Compile Include="Helpers\XmlFormatExtensions.cs" />
     <Compile Include="Models\CertificateExistsAttribute.cs" />
     <Compile Include="Models\ContentModel.cs" />
+    <Compile Include="Models\PrivateCertificateExistsAttribute.cs" />
     <Compile Include="Models\DecryptionInput.cs" />
     <Compile Include="Models\EncryptionInput.cs" />
     <Compile Include="Global.asax.cs">
