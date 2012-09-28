@@ -80,3 +80,13 @@ Because this app takes a hard dependency on the Pkcs12ProtectedConfigurationProv
 <br />
 <br />
 Instead, this app provides you with the <code>&lt;configProtectedData&gt;</code> XML section that will be required at decryption time. You should paste one instance of this section into your target Web.config or App.config file. 
+<h2>A note about xdt: config transform attributes</h2>
+If your input XML has any config tranform attributes (such as <code>xdt:Transform</code>, <code>xdt:Locator</code>, or <code>xdt:SupressWarnings</code> attributes), <strong>they will be stripped out before encryption and not restored after encryption</strong>.
+<br />
+<br />
+If you are encrypting config sections to be entered into a target config transform file (such as Web.Debug.config, App.Release.config, etc), you will be responsible for restoring these attributes before pasting them into the target file.
+<h3>Why?</h3>
+The way this app works internally is by using your XML input to construct a <code>System.Configuration.ConfigXmlDocument</code> object. When these xdt: attributes are present, creating the object causes a runtime exception. It makes sense because these attributes are intended for config transform files, not config files.
+<br />
+<br />
+To keep the code implementation as simple as possible, <strong>these xdt: attributes are sniffed and stripped out of your input</strong> before constructing the <code>ConfigXmlDocument</code> object. If you are interested in an app that can maintain these attributes in the encrypted XML output, feel free to <a href="https://github.com/danludwig/CloudConfigCrypto" target="_blank">fork this project and add that feature</a>.
