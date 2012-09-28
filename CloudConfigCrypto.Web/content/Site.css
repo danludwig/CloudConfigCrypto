@@ -760,3 +760,24 @@ tr.pager td {
             margin: 0;
         }
 }
+
+
+/* custom styles */
+img {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+form.crypto #xmlInput {
+    width: 960px;
+    min-height: 400px;
+}
+
+form.crypto #thumbprint {
+    width: 450px;
+}
+
+#dialog #xmlOutput {
+    width: 900px;
+    height: 400px;
+}

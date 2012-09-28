@@ -4,8 +4,8 @@
 <div>
     <span class="field-validation-error" data-bind="validationMessage: thumbprint"></span>
 </div>
-<input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, validationElement: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
+<input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, validationElement: thumbprint, element: 'thumbprintEl'" />
 <span data-bind="visible: isValidatingThumbprint" style="display: none;">
-    <img src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
+    <img src="~/images/spinner.gif" alt="" />
     <em>Validating certificate thumbprint...</em>
 </span>
