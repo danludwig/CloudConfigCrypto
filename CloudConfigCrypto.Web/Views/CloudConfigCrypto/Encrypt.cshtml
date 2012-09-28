@@ -17,7 +17,7 @@
 
 }
 
-<h2>@ViewBag.Title</h2>
+<h1>@ViewBag.Title</h1>
 <form method="POST" data-bind="submit: submit" class="crypto">
     <br />
     @Html.Partial("_ThumbprintInputField")
@@ -28,3 +28,55 @@
     @Html.Partial("_CryptoSubmitButton", new { ButtonValue = "Encrypt" })
 </form>
 @Html.Partial("_XmlOutputDialog", new { DialogTitle = "Encrypted" })
+
+<h2>Running the example</h2>
+<p>
+    To see an example, first <a href="@Url.Action("ImportCertificatesLocally", "CloudConfigCrypto")">import the sample certificates provided with this project</a> (located in the <code>sample_certificates</code> folder in the MVC project) into your local certificate store.
+    <br />
+    <br />
+    After you have imported one of the certificates (either the .CER or the .PFX), click the <a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> link above the thumbprint text box.
+    <br />
+    <br />
+    Also click the <a href="#" data-bind="click: useExampleXmlInput">Use example config sections</a> link above the Unencrypted config section(s) text box.
+    <br />
+    <br />
+    Finally, click the Encrypt submit button.
+    <br />
+    <br />
+    You should see a dialog popup containing an XML configuration node, along with options to select (&amp; copy) it or save it to a file.
+</p>
+<h2>Basic usage</h2>
+To encrypt XML configuration file sections, just paste the raw XML into the Unencrypted config section(s) text box.
+<br />
+<br />
+<strong>You should not paste in the root <code>&lt;configuration&gt;</code> node or a <code>&lt;configProtectedData&gt;</code> node.</strong>
+<br />
+<br />
+By default, each root-level node that you paste in will get all of its children encrypted. You can see examples of this with the <code>&lt;connectionStrings&gt;</code> and <code>&lt;appSettings&gt;</code> nodes in the example XML.
+<h3>Targeting encryption to nested sections</h3>
+To encrypt a nested node, include the target node's parents (up to but not including the the root <code>&lt;configuration&gt;</code> node) and place a <code>configProtectionProvider=&quot;CustomProvider&quot;</code> attribute one level above the node you want to encrypt.
+<br />
+<br />
+You can see this in action with the <code>system.net/mailSettings/smtp/network</code> node in the example XML. In this example, only the <code>&lt;network&gt;</code> node is encrypted, rather than all of the <code>&lt;system.net&gt;</code> section's children.
+<h2>Encrypted Output XML</h2>
+After encrypting, you may notice that the resulting XML output <em>does</em> include the root <code>&lt;configuration&gt;</code> section. There are 2 reasons for this.
+<br />
+<br />
+First, this app internally creates a <code>System.Configuration.ConfigXmlDocument</code> object to perform the encryption, so the root is required.
+<br />
+<br />
+The root node could be stripped out, but is kept because it can help maintain formatting (nesting) when copying and pasting the encrypted XML output to a real config file. Just be careful to not select the root-level <code>&lt;configuration&gt;</code> node when copying from the output to your target config file.
+<br />
+<br />
+By default, the nodes are nested using 2 space characters for each level. While using 4 space characters is more consistent with the XML <code>Format Document</code> command in Visual Studio, using 2 spaces is more consistent with the initial project Web.config/App.config formats, and more importantly, the nesting format applied to your config files when installing NuGet packages.
+<h3>The <code>&lt;configProtectedData&gt;</code> node</h3>
+When using command line tools to encrypt config sections, you are required to add this section to your config file <em>before</em> running the encryption command.
+<br />
+<br />
+Its jobs are to tell .NET which provider to use for encryption / decryption (in our case, the Pkcs12ProtectedConfigurationProvider), and also provide any additional information needed by that provider (in our case, the certificate's thumbprint).
+<br />
+<br />
+Because this app takes a hard dependency on the Pkcs12ProtectedConfigurationProvider, and provides a text box to input the certificate thumbprint, there is no need for you to have to know this XML at encryption time. 
+<br />
+<br />
+Instead, this app provides you with the <code>&lt;configProtectedData&gt;</code> XML section that will be required at decryption time. You should paste one instance of this section into your target Web.config or App.config file. 
