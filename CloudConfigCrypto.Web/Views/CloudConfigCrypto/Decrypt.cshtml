@@ -17,40 +17,14 @@
 
 }
 
-
 <h2>@ViewBag.Title</h2>
 <form method="POST" data-bind="submit: submit">
     <br />
-    <label for="thumbprint">Thumbprint</label>
-    <a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> | 
-    <a href="#" data-bind="click: clearSampleThumbprint">Enter custom certificate thumbprint</a>
-    <div>
-        <span class="field-validation-error" data-bind="validationMessage: thumbprint"></span>
-    </div>
-    <input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, validationElement: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
-    <span data-bind="visible: isValidatingThumbprint" style="display: none;">
-        <img src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
-        <em>Validating certificate thumbprint...</em>
-    </span>
+    @Html.Partial("_ThumbprintInputField")
     <br />
     <br />
-    <label for="xmlInput">Encrypted config section(s)</label>
-    <a href="#" data-bind="click: useExampleXmlInput">Use example config sections</a> |
-    <a href="#" data-bind="click: clearXmlInput">Enter custom config sections</a>
-    <div>
-        <span class="field-validation-error" data-bind="validationMessage: xmlInput"></span>
-    </div>
-    <textarea name="xmlInput" id="xmlInput" style="width: 960px; min-height: 400px;" data-bind="value: xmlInput, validationElement: xmlInput, element: 'xmlInputEl'"></textarea>
+    @Html.Partial("_XmlInputField", new { XmlInputType = "Encrypted" })
     <br />
-    <input type="submit" value="Decrypt" data-bind="value: submitButtonText, enable: !isProcessingCrypto()" />
-    <img data-bind="visible: isProcessingCrypto" src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
+    @Html.Partial("_CryptoSubmitButton", new { ButtonValue = "Decrypt" })
 </form>
-<div id="dialog" title="Decrypted config section(s)" style="display: none;">
-    <form method="POST" action="@Url.Action("Save", "CloudConfigCrypto")">
-        <a href="" data-bind="click: selectXmlOutput">Select the results</a> &amp; hit <kbd>CTRL + C</kbd> to copy, or
-        <a href="@Url.Action("Save", "CloudConfigCrypto")" data-bind="click: download">Save to file</a>.
-        <input name="content" type="hidden" data-bind="value: xmlOutput" />
-        <input name="context" type="hidden" value="Decrypted" />
-    </form>
-    <textarea data-bind="value:xmlOutput, element: 'xmlOutputEl'" style="width: 900px; height: 400px;"></textarea>
-</div>
+@Html.Partial("_XmlOutputDialog", new { DialogTitle = "Decrypted" })

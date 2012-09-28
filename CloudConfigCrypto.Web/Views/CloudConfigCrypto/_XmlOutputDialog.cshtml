@@ -1,0 +1,11 @@
+﻿@model dynamic
+
+<div id="dialog" title="@Model.DialogTitle config section(s)" style="display: none;">
+    <form method="POST" action="@Url.Action("Save", "CloudConfigCrypto")">
+        <a href="#" data-bind="click: selectXmlOutput">Select the results</a> &amp; hit <kbd>CTRL + C</kbd> to copy, or
+        <a href="@Url.Action("Save", "CloudConfigCrypto")" data-bind="click: download">Save to file</a>.
+        <input name="content" type="hidden" data-bind="value: xmlOutput" />
+        <input name="context" type="hidden" value="Encrypted" />
+    </form>
+    <textarea data-bind="value: xmlOutput, element: 'xmlOutputEl'" style="width: 900px; height: 400px;"></textarea>
+</div>

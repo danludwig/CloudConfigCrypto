@@ -303,6 +303,10 @@
     </Content>
     <Content Include="scripts\T4MvcJs\T4MVC.tt.settings.t4" />
     <Content Include="scripts\T4MvcJs\T4MVC.source.t4" />
+    <Content Include="Views\CloudConfigCrypto\_ThumbprintInputField.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\_XmlInputField.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\_CryptoSubmitButton.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\_XmlOutputDialog.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

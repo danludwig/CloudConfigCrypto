@@ -1,0 +1,10 @@
+﻿@model dynamic
+
+<label for="xmlInput">@Model.XmlInputType config section(s)</label>
+<a href="#" data-bind="click: useExampleXmlInput">Use example config sections</a> |
+<a href="#" data-bind="click: clearXmlInput">Enter custom config sections</a>
+<div>
+    <span class="field-validation-error" data-bind="validationMessage: xmlInput"></span>
+</div>
+<textarea name="xmlInput" id="xmlInput" style="width: 960px; min-height: 400px;" data-bind="value: xmlInput, validationElement: xmlInput, element: 'xmlInputEl'"></textarea>
+

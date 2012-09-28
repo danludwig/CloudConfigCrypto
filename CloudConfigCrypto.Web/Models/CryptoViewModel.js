@@ -41,11 +41,7 @@
     };
 
     // XML input
-    self.xmlInput = ko.observable().extend({
-        required: {
-            message: 'Config section(s) is required.'
-        }
-    });
+    self.xmlInput = ko.observable();
     self.xmlInputEl = undefined;
     self.exampleInputXml = ko.observable('<example></example>');
     self.useExampleXmlInput = function () {
@@ -80,6 +76,7 @@
         $('#dialog').dialog({
             height: 500,
             width: 960,
+            modal: true,
             show: {
                 effect: 'slide',
                 direction: 'down'

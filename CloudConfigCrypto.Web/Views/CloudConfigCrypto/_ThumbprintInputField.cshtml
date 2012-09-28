@@ -1,0 +1,11 @@
+﻿<label for="thumbprint">Thumbprint</label>
+<a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> | 
+<a href="#" data-bind="click: clearSampleThumbprint">Enter custom certificate thumbprint</a>
+<div>
+    <span class="field-validation-error" data-bind="validationMessage: thumbprint"></span>
+</div>
+<input type="text" name="thumbprint" id="thumbprint" data-bind="value: thumbprint, validationElement: thumbprint, element: 'thumbprintEl'" style="width: 420px;" />
+<span data-bind="visible: isValidatingThumbprint" style="display: none;">
+    <img src="~/images/spinner.gif" alt="" style="vertical-align: middle; display: inline-block;" />
+    <em>Validating certificate thumbprint...</em>
+</span>
