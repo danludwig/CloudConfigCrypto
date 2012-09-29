@@ -7,6 +7,8 @@ This is a little web project that you can use to encrypt and decrypt XML configu
  - [Securing Your Connection String in Windows Azure: Part 3](http://blogs.msdn.com/b/sqlazure/archive/2010/09/09/10059889.aspx)
  - [Securing Your Connection String in Windows Azure: Part 4](http://blogs.msdn.com/b/sqlazure/archive/2010/09/10/10060395.aspx)
 
+Contrary to the article titles, you can use this tool to encrypt **any** config section -- not just the `connectionStrings`. I have also used it to successfully encrypt `appSettings`, `dataCacheClients`, and the `system.net/mailSettings/smtp` sections when deploying to Azure.
+
 ## Why this project
 
 I built this project mainly because I wanted to be able to decrypt some web.config sections that I encrypted over a year ago. I forgot some of the settings I used for the `dataCacheClients` and `system.net/mailSettings/smtp/network` section, and these were proving difficult to decrypt using command line tools. I ran a little spike to see if I could decrypt them by brute force, and that spike turned into this project.
