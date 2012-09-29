@@ -69,10 +69,10 @@
         return self.isProcessingCrypto() ? self.submittingText() : self.submitText();
     });
     self.cryptoEndpointUrl = ko.observable('/');
-    self.cryptoSuccess = function (response) {
+    self.cryptoSuccess = function () {
         alert('Override cryptoSuccess function in viewmodel');
     };
-    self.showXmlOutput = function(xmlOutput) {
+    self.showXmlOutput = function() {
         $('#dialog').dialog({
             height: 500,
             width: 960,

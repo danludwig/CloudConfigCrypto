@@ -1,6 +1,6 @@
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 
 namespace CloudConfigCrypto.Web.Models
 {
@@ -15,6 +15,7 @@ namespace CloudConfigCrypto.Web.Models
             try
             {
                 var test = certificate.PrivateKey;
+                Debug.Assert(test != null);
             }
             catch (CryptographicException)
             {
