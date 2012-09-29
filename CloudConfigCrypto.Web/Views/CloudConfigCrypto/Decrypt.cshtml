@@ -28,3 +28,41 @@
     @Html.Partial("_CryptoSubmitButton", new { ButtonValue = "Decrypt" })
 </form>
 @Html.Partial("_XmlOutputDialog", new { DialogTitle = "Decrypted" })
+@Html.Partial("_InstructRunExample", new { EncryptedOrUnencrypted = "Encrypted" })
+<h2>Basic usage</h2>
+To decrypt XML configuration file sections, just paste the raw XML into the Encrypted config section(s) text box.
+<br />
+<br />
+<strong>You should not paste in the root <code>&lt;configuration&gt;</code> node or a <code>&lt;configProtectedData&gt;</code> node.</strong>
+<h3>The <code>&lt;configProtectedData&gt;</code> node</h3>
+When .NET decrypts config sections (either via the command line or when deployed to IIS), you are required to have this section in your config file.
+<br />
+<br />
+Its jobs are to tell .NET which provider to use for encryption / decryption (in our case, the Pkcs12ProtectedConfigurationProvider), and also provide any additional information needed by that provider (in our case, the certificate's thumbprint).
+<br />
+<br />
+Because this app takes a hard dependency on the Pkcs12ProtectedConfigurationProvider, and provides a text box to input the certificate thumbprint, there is no need for you to know this XML at decryption time. Instead, this app automatically generates a <code>&lt;configProtectedData&gt;</code> XML section after you submit the encrypted XML to be decrypted. By default, the automatically generated section uses &quot;CustomProvider&quot; as the provider name.
+<br />
+<br />
+You <strong>should</strong> make sure that each encrypted section container has a <code>configProtectionProvider=&quot;CustomProvider&quot;</code> attribute. If your original encrypted section(s) use(s) a different name for the protection provider, change the name to &quot;CustomProvider&quot; before trying to decrypt. If you would like to customize this app to use different <code>configProtectedData</code> provider names, feel free to <a href="https://github.com/danludwig/CloudConfigCrypto" target="_blank">fork this project</a> and submit a pull request.
+<h2>Decrypted Output XML</h2>
+After decrypting, you may notice that the resulting XML output <em>does</em> include the root <code>&lt;configuration&gt;</code> section. There are 2 reasons for this.
+<br />
+<br />
+First, this app internally creates a <code>System.Configuration.ConfigXmlDocument</code> object to perform the decryption, so the root is required.
+<br />
+<br />
+The root node could be stripped out, but is kept because it can help maintain formatting (nesting) when copying and pasting the decrypted XML output to a real config file. Just be careful to not select the root-level <code>&lt;configuration&gt;</code> node when copying from the output to your target config file.
+<br />
+<br />
+By default, the nodes are nested using 2 space characters for each level. While using 4 space characters is more consistent with the XML <code>Format Document</code> command in Visual Studio, using 2 spaces is more consistent with the initial project Web.config/App.config formats, and more importantly, the nesting format applied to your config files when installing NuGet packages.
+<h2>A note about xdt: config transform attributes</h2>
+If your input XML has any config tranform attributes (such as <code>xdt:Transform</code>, <code>xdt:Locator</code>, or <code>xdt:SupressWarnings</code> attributes), <strong>they will be stripped out before decryption and not restored afterward</strong>.
+<br />
+<br />
+If you are decrypting config sections pulled from a config transform file (such as Web.Release.config, App.Release.config, etc), you will be responsible for restoring these attributes before pasting them back into a config transform file.
+<h3>Why?</h3>
+The way this app works internally is by using your XML input to construct a <code>System.Configuration.ConfigXmlDocument</code> object. When these xdt: attributes are present, creating this object causes a runtime exception. It makes sense because these attributes are intended for config transform files, not config files.
+<br />
+<br />
+To keep the code implementation as simple as possible, <strong>these xdt: attributes are sniffed and stripped out of your input</strong> before constructing the <code>ConfigXmlDocument</code> object. If you are interested in an app that can maintain these attributes in the decrypted XML output, feel free to <a href="https://github.com/danludwig/CloudConfigCrypto" target="_blank">fork this project and add that feature</a>.

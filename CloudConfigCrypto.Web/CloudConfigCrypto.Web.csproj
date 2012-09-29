@@ -307,6 +307,7 @@
     <Content Include="Views\CloudConfigCrypto\_XmlInputField.cshtml" />
     <Content Include="Views\CloudConfigCrypto\_CryptoSubmitButton.cshtml" />
     <Content Include="Views\CloudConfigCrypto\_XmlOutputDialog.cshtml" />
+    <Content Include="Views\CloudConfigCrypto\_InstructRunExample.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

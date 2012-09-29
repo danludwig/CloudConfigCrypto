@@ -29,22 +29,7 @@
 </form>
 @Html.Partial("_XmlOutputDialog", new { DialogTitle = "Encrypted" })
 
-<h2>Running the example</h2>
-<p>
-    To see an example, first <a href="@Url.Action("ImportCertificatesLocally", "CloudConfigCrypto")">import the sample certificates provided with this project</a> (located in the <code>sample_certificates</code> folder in the MVC project) into your local certificate store.
-    <br />
-    <br />
-    After you have imported one of the certificates (either the .CER or the .PFX), click the <a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> link above the thumbprint text box.
-    <br />
-    <br />
-    Also click the <a href="#" data-bind="click: useExampleXmlInput">Use example config sections</a> link above the Unencrypted config section(s) text box.
-    <br />
-    <br />
-    Finally, click the Encrypt submit button.
-    <br />
-    <br />
-    You should see a dialog popup containing an XML configuration node, along with options to select (&amp; copy) it or save it to a file.
-</p>
+@Html.Partial("_InstructRunExample", new { EncryptedOrUnencrypted = "Unencrypted" })
 <h2>Basic usage</h2>
 To encrypt XML configuration file sections, just paste the raw XML into the Unencrypted config section(s) text box.
 <br />
@@ -76,17 +61,17 @@ When using command line tools to encrypt config sections, you are required to ad
 Its jobs are to tell .NET which provider to use for encryption / decryption (in our case, the Pkcs12ProtectedConfigurationProvider), and also provide any additional information needed by that provider (in our case, the certificate's thumbprint).
 <br />
 <br />
-Because this app takes a hard dependency on the Pkcs12ProtectedConfigurationProvider, and provides a text box to input the certificate thumbprint, there is no need for you to have to know this XML at encryption time. 
+Because this app takes a hard dependency on the Pkcs12ProtectedConfigurationProvider, and provides a text box to input the certificate thumbprint, there is no need for you to know this XML at encryption time. 
 <br />
 <br />
 Instead, this app provides you with the <code>&lt;configProtectedData&gt;</code> XML section that will be required at decryption time. You should paste one instance of this section into your target Web.config or App.config file. 
 <h2>A note about xdt: config transform attributes</h2>
-If your input XML has any config tranform attributes (such as <code>xdt:Transform</code>, <code>xdt:Locator</code>, or <code>xdt:SupressWarnings</code> attributes), <strong>they will be stripped out before encryption and not restored after encryption</strong>.
+If your input XML has any config tranform attributes (such as <code>xdt:Transform</code>, <code>xdt:Locator</code>, or <code>xdt:SupressWarnings</code> attributes), <strong>they will be stripped out before encryption and not restored afterward</strong>.
 <br />
 <br />
-If you are encrypting config sections to be entered into a target config transform file (such as Web.Debug.config, App.Release.config, etc), you will be responsible for restoring these attributes before pasting them into the target file.
+If you are encrypting config sections to be entered into a target config transform file (such as Web.Release.config, App.Release.config, etc), you will be responsible for restoring these attributes before pasting them into the target file.
 <h3>Why?</h3>
-The way this app works internally is by using your XML input to construct a <code>System.Configuration.ConfigXmlDocument</code> object. When these xdt: attributes are present, creating the object causes a runtime exception. It makes sense because these attributes are intended for config transform files, not config files.
+The way this app works internally is by using your XML input to construct a <code>System.Configuration.ConfigXmlDocument</code> object. When these xdt: attributes are present, creating this object causes a runtime exception. It makes sense because these attributes are intended for config transform files, not config files.
 <br />
 <br />
 To keep the code implementation as simple as possible, <strong>these xdt: attributes are sniffed and stripped out of your input</strong> before constructing the <code>ConfigXmlDocument</code> object. If you are interested in an app that can maintain these attributes in the encrypted XML output, feel free to <a href="https://github.com/danludwig/CloudConfigCrypto" target="_blank">fork this project and add that feature</a>.

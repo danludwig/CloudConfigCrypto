@@ -1,0 +1,33 @@
+﻿@model dynamic
+
+<h2>Running the example</h2>
+To see an example, first <a href="@Url.Action("ImportCertificatesLocally", "CloudConfigCrypto")">import the sample certificates provided with this project</a> (located in the <code>sample_certificates</code> folder in the MVC project) into your local certificate store.
+@if (Model.EncryptedOrUnencrypted == "Encrypted")
+{
+    <text><strong>Important: to decrypt, you need to import the private key certificate (.PFX file)</strong>.</text>
+}
+else
+{
+    <text>To encrypt, you can import either the public key certificate (.CER file) or the private key certificate (.PFX file).</text>
+}
+<br />
+<br />
+After you have imported the sample certificate, click the <a href="#" data-bind="click: useSampleThumbprint">Use sample certificate thumbprint</a> link above the thumbprint text box.
+<br />
+<br />
+Also click the <a href="#" data-bind="click: useExampleXmlInput">Use example config sections</a> link above the @Model.EncryptedOrUnencrypted config section(s) text box.
+<br />
+<br />
+Finally, click the
+@if (@Model.EncryptedOrUnencrypted == "Unencrypted")
+{
+    <text>Encrypt</text>
+}
+else
+{
+    <text>Decrypt</text>
+}
+submit button.
+<br />
+<br />
+You should see a dialog popup containing an XML configuration node, along with options to select (&amp; copy) it or save it to a file.
