@@ -38,8 +38,11 @@ namespace CloudConfigCrypto.Web
                      for (var i = 0; i < stack.Count - 1; i++)
                          builder.Insert(builder.Length - element.Length, indent);
 
-                 // self-closing elements get popped off the stack
-                 if (element.StartsWith("</") || stack.First().EndsWith("/>")) stack.Pop();
+                 // self-closing elements and comments get popped off the stack
+                 if (element.StartsWith("</")
+                     || element.StartsWith("<!--")
+                     || stack.First().EndsWith("/>"))
+                     stack.Pop();
                  lastElement = element;
              }
 
