@@ -17,3 +17,6 @@ I built this project mainly because I wanted to be able to decrypt some web.conf
 
 Clone this repo, open the sln file in VS 2010 or 2012, and hit F5. You can test it out using a set of sample certificates provided in the project. Just follow the process described on the home page.
 
+## License
+
+This software is subject to the terms of the [Microsoft Public License (Ms-PL)](http://www.opensource.org/licenses/MS-PL).
